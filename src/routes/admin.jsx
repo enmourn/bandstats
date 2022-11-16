@@ -35,23 +35,38 @@ export async function loader({ params }) {
 export default function Admin() {
   const band = useLoaderData()
   const rehershals = band.rehershals ? rehershalsToTree(band.rehershals) : null
-  const now = new Date
-  const [calendar, setCalendar] = useState(now)
+
+  const dateNow = new Date
+  const dateFirstRehershal = (() => {
+    if (band.rehershals) {
+      let dateStr = Object.keys(band.rehershals)[0]
+      let [year, month, day] = dateStr.split('-').map(str => parseInt(str))
+      return new Date(year, month - 1, day)
+    } else {
+      return dateNow
+    }
+  })()
+  const [currentCalendar, setCurrentCalendar] = useState({
+    year: dateNow.getFullYear(),
+    month: dateNow.getMonth()
+  })
+  const getCalendar = num => {
+    let date = new Date(currentCalendar.year, currentCalendar.month + num)
+    return {year: date.getFullYear(), month: date.getMonth()}
+  }
   const getDates = () => {
-    let year = calendar.getFullYear()
-    let month = calendar.getMonth() + 1
+    let year = currentCalendar.year
+    let month = currentCalendar.month + 1
     return rehershals && rehershals[year] && rehershals[year][month] || {}
   }
   const calendarPrev = () => {
-    let year = calendar.getFullYear()
-    let month = calendar.getMonth()
-    return rehershals && rehershals[year] && rehershals[year][month] ?
-      () => setCalendar(new Date(calendar.getFullYear(), calendar.getMonth() - 1)) :
+    return new Date(currentCalendar.year, currentCalendar.month) > dateFirstRehershal ?
+      () => setCurrentCalendar(getCalendar(-1)) :
       false
   }
   const calendarNext = () => {
-    return calendar.getMonth() < now.getMonth() ?
-      () => setCalendar(new Date(calendar.getFullYear(), calendar.getMonth() + 1)) :
+    return new Date(currentCalendar.year, currentCalendar.month + 1) < dateNow ?
+      () => setCurrentCalendar(getCalendar(+1)) :
       false
   }
   const calendarClick = (day) => {
@@ -60,8 +75,8 @@ export default function Admin() {
   return (
     <Grid gap={6}>
       <Calendar
-        year={calendar.getFullYear()}
-        month={calendar.getMonth() + 1}
+        year={currentCalendar.year}
+        month={currentCalendar.month + 1}
         dates={getDates()}
         prev={calendarPrev()}
         next={calendarNext()}
