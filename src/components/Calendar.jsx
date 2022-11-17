@@ -62,7 +62,7 @@ export default function Calendar({year, month, dates, prev, next, click}) {
           key={key}
           colorScheme={calendar[key] ? 'teal': null}
           justifySelf="stretch"
-          onClick={click ? e => click(key): null}
+          onClick={click ? e => click(new Date(year, month, key)): null}
         >{key}</Button>
       )}
     </Grid>

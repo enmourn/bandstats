@@ -1,20 +1,9 @@
 import { useState } from 'react'
 import { getAuth, onAuthStateChanged } from "firebase/auth"
-import { getDatabase, ref, child, get } from "firebase/database";
-import { useLoaderData } from "react-router-dom";
-import Calendar from '../components/calendar'
-import { Grid } from '@chakra-ui/react'
-
-const rehershalsToTree = rehershals => {
-  let result = {}
-  Object.keys(rehershals).forEach(key => {
-    let [year, month, day] = key.split('-').map(str => parseInt(str))
-    result[year] ? null : result[year] = {}
-    result[year][month] ? null : result[year][month] = {}
-    result[year][month][day] ? null : result[year][month][day] = {[day]: rehershals[key]}
-  })
-  return result
-}
+import { getDatabase, ref, child, get, set} from "firebase/database";
+import { useLoaderData, Form } from "react-router-dom";
+import CalendarEvents from '../components/CalendarEvents'
+import { FormControl, FormLabel, Input, Grid, Text, Textarea, GridItem} from '@chakra-ui/react'
 
 export async function loader({ params }) {
   const band = await get(child(ref(getDatabase()), `bands/${params.bandKey}`))
@@ -32,37 +21,64 @@ export async function loader({ params }) {
   return band
 }
 
+const FormEvent = ({event}) => {
+  const title = event.date.toLocaleString("ru", {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long',
+  })
+  return (
+    <Form key={event.date}>
+      <Text
+        css={{
+          "&:first-letter": {
+            textTransform: "uppercase",
+          },
+        }}
+        textAlign='center'
+        fontSize={22}
+        mb={2}
+      >{title}</Text>
+      <Grid templateColumns='repeat(2, 1fr)' gap={2}>
+        <FormControl>
+          <FormLabel>Начало:</FormLabel>
+          <Input type='time' defaultValue={event.start}/>
+        </FormControl>
+        <FormControl>
+          <FormLabel>Окончание:</FormLabel>
+          <Input type='time' defaultValue={event.end}/>
+        </FormControl>
+        <GridItem colSpan={2}>
+          <FormControl>
+            <FormLabel>Комментарий:</FormLabel>
+            <Textarea defaultValue={event.comment}/>
+          </FormControl>
+        </GridItem>
+      </Grid>  
+    </Form>
+  )
+}
+
 export default function Admin() {
   const band = useLoaderData()
-  const rehershals = band.rehershals ? rehershalsToTree(band.rehershals) : null
-  const dateNow = new Date
-  const [dateCurrent, setDateCurrent] = useState(dateNow)
-  const calendarGetDates = () => {
-    let year = dateCurrent.getFullYear()
-    let month = dateCurrent.getMonth() + 1
-    return rehershals && rehershals[year] && rehershals[year][month] || {}
+  const defaultEvent = {
+    start: '23:00',
+    end: '22:00'
   }
-  const calendarPrev = () => {
-    let datePrev = new Date(dateCurrent.getFullYear(), dateCurrent.getMonth() - 1)
-    return () => setDateCurrent(datePrev)
-  }
-  const calendarNext = () => {
-    let dateNext = new Date(dateCurrent.getFullYear(), dateCurrent.getMonth() + 1)
-    return dateNext <= dateNow ? () => setDateCurrent(dateNext) : false
-  }
-  const calendarClick = (day) => {
-    console.log(day)
+  const [event, setEvent] = useState()
+  const calendarClick = date => {
+    let year = date.getFullYear()
+    let month = date.getMonth()
+    let day = date.getDate()
+    let event = band?.events?.[year]?.[month + 1]?.[day] || defaultEvent
+    event.date = date
+    setEvent(event)
   }
   return (
-    <Grid gap={6}>
-      <Calendar
-        year={dateCurrent.getFullYear()}
-        month={dateCurrent.getMonth() + 1}
-        dates={calendarGetDates()}
-        prev={calendarPrev()}
-        next={calendarNext()}
-        click={calendarClick}
-      />
+    <Grid gap={10}>
+      <CalendarEvents events={band.events} click={calendarClick} />
+      {event && <FormEvent event={event} />}
     </Grid>
   )
 }
