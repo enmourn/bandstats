@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { Form } from "react-router-dom";
+import { Form, useSubmit } from "react-router-dom";
 import TextareaAutosize from 'react-textarea-autosize';
 import {
   FormControl,
   FormLabel,
   Input,
   Grid,
+  Flex,
   Text,
   Textarea,
   GridItem,
@@ -25,7 +26,7 @@ const Musician = ({musician}) => {
         onChange={e => setChecked(!checked)}
         >{musician.name}</Checkbox>
       {checked && 
-        <Grid templateColumns='repeat(2, 1fr)' gap={4} ml={10}>
+        <Grid templateColumns='repeat(2, 1fr)' gap={2}>
           <VisuallyHiddenInput name='musician' defaultValue={musician.id} />
           <FormControl>
             <FormLabel mb={0}>Приход:</FormLabel>
@@ -54,6 +55,7 @@ const Musician = ({musician}) => {
 }
 
 export default function FormEvent({event, musicians}) {
+  const submit = useSubmit()
   const checkboxes = Object.keys(musicians).map(key => {
     let musician = {id: key, name: musicians[key]}
     event?.musicians && (musician = {...event.musicians[key], ...musician})
@@ -65,8 +67,18 @@ export default function FormEvent({event, musicians}) {
     day: 'numeric',
     weekday: 'long',
   })
+  let date = event.date.getFullYear() + '/'
+  date += (event.date.getMonth() + 1) + '/'
+  date += event.date.getDate()
+  const handleDelete = () => {
+    let formData = new FormData
+    formData.append('delete', true)
+    formData.append('date', date)
+    submit(formData, {method: 'post'})
+  }
   return (
     <Form key={event.date} method='post'>
+      <VisuallyHiddenInput name='date' defaultValue={date} />
       <Text
         css={{"&:first-letter": {textTransform: "uppercase"}}}
         textAlign='center'
@@ -75,18 +87,31 @@ export default function FormEvent({event, musicians}) {
       >{title}</Text>
       <Grid
         templateColumns='repeat(2, 1fr)'
-        gap={4}
+        gridGap={2}
+        rowGap={4}
         p={4}
         borderRadius={4}
         bg='gray.100'
       >
         <FormControl>
           <FormLabel>Начало:</FormLabel>
-          <Input type='time' defaultValue={event.start} isRequired bg='white' />
+          <Input
+            type='time'
+            name='start'
+            defaultValue={event.start}
+            isRequired
+            bg='white'
+          />
         </FormControl>
         <FormControl>
           <FormLabel>Окончание:</FormLabel>
-          <Input type='time' defaultValue={event.end} isRequired bg='white'/>
+          <Input
+          type='time'
+          name='end'
+          defaultValue={event.end}
+          isRequired
+          bg='white'
+        />
         </FormControl>
         <GridItem colSpan={2}>
           <FormControl>
@@ -102,6 +127,7 @@ export default function FormEvent({event, musicians}) {
           <FormControl>
             <FormLabel>Комментарий:</FormLabel>
             <Textarea
+              name='comment'
               as={TextareaAutosize}
               defaultValue={event.comment}
               resize='none'
@@ -109,7 +135,17 @@ export default function FormEvent({event, musicians}) {
           </FormControl>
         </GridItem>
         <GridItem colSpan={2}>
-          <Button type='submit' colorScheme='teal'>Сохранить</Button>
+          <Button
+            type='submit'
+            colorScheme='teal'
+          >Сохранить</Button>
+          {event.start &&
+            <Button
+              onClick={handleDelete}
+              colorScheme='red'
+              ml={2}
+            >Удалить</Button>
+          }
         </GridItem>
       </Grid>  
     </Form>
