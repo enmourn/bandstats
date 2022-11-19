@@ -2,12 +2,12 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { initializeApp } from "firebase/app"
-import { ChakraProvider } from '@chakra-ui/react'
+import { ChakraProvider, extendTheme } from '@chakra-ui/react'
 import Root from './routes/root'
 import Index from './routes/index'
 import Auth, { loader as authLoader, action as authAction} from './routes/auth'
 import Registration, { action as registrationAction} from './routes/registration'
-import Admin, { loader as adminLoader } from './routes/admin'
+import Admin, { loader as adminLoader, action as adminAction } from './routes/admin'
 
 const firebaseConfig = {
   apiKey: "AIzaSyC2AO9CBep5oe7pz-eJYLaX-iFXjE9aWZ0",
@@ -19,6 +19,20 @@ const firebaseConfig = {
   measurementId: "G-E69WTB8DNE"
 };
 const app = initializeApp(firebaseConfig);
+
+const theme = extendTheme({
+  components: {
+    Checkbox: {
+      variants: {
+        "white": {
+          control: {
+            bg: "white"
+          }
+        }
+      }
+    }
+  }
+})
 
 const router = createBrowserRouter([
   {
@@ -43,7 +57,8 @@ const router = createBrowserRouter([
       {
         path: ':bandKey/admin',
         element: <Admin />,
-        loader: adminLoader
+        loader: adminLoader,
+        action: adminAction
       }
     ]
   },
@@ -51,7 +66,7 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ChakraProvider>
+    <ChakraProvider theme={theme}>
       <RouterProvider router={router} />
     </ChakraProvider>
   </React.StrictMode>
