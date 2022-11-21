@@ -1,15 +1,17 @@
 export function firebaseErrorParse(error) {
   switch (error.code) {
     case 'auth/invalid-email': 
-      return 'Неверный логин, используйте email' 
+      return 'Неверный адрес электронной почты' 
     case 'auth/user-not-found': 
-      return 'Неверный логин, пользователь не найден'
+      return 'Пользователь не найден'
     case 'auth/wrong-password':
       return 'Неверный пароль'
     case 'auth/weak-password':
-      return 'Короткий пароль, используйте более 6 символов'
+      return 'Слабый пароль'
     case 'auth/email-already-in-use':
-      return 'Пользователь с таким email уже зарегистрирован'
+      return 'Этот электронный адрес уже занят'
+    case 'auth/network-request-failed':
+      return 'Сетевой запрос не выполнен'
     default:
       return error.message
   }

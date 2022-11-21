@@ -3,11 +3,19 @@ import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { initializeApp } from "firebase/app"
 import { ChakraProvider, extendTheme } from '@chakra-ui/react'
+
 import Root from './routes/root'
-import Index from './routes/index'
-import Auth, { loader as authLoader, action as authAction} from './routes/auth'
-import Registration, { action as registrationAction} from './routes/registration'
-import Admin, { loader as adminLoader, action as adminAction } from './routes/admin'
+import Index, {
+  loader as indexLoader } from './routes/index'
+import Auth, {
+  loader as authLoader,
+  action as authAction } from './routes/auth'
+import Registration,  {
+  loader as registrationLoader,
+  action as registrationAction } from './routes/registration'
+import Admin, {
+  loader as adminLoader,
+  action as adminAction } from './routes/admin'
 
 const firebaseConfig = {
   apiKey: "AIzaSyC2AO9CBep5oe7pz-eJYLaX-iFXjE9aWZ0",
@@ -41,7 +49,8 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Index />
+        element: <Index />,
+        loader: indexLoader
       },
       {
         path: 'auth',
@@ -52,6 +61,7 @@ const router = createBrowserRouter([
       {
         path: 'registration',
         element: <Registration />,
+        loader: registrationLoader,
         action: registrationAction
       },
       {

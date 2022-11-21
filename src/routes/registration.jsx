@@ -1,91 +1,143 @@
-import { redirect, Form, useActionData } from "react-router-dom"
-import { getAuth, createUserWithEmailAndPassword as createUser } from "firebase/auth"
-import { getDatabase, ref, push, set, update } from "firebase/database";
-import { useState, useEffect } from "react"
-import { SmallAddIcon, SmallCloseIcon } from '@chakra-ui/icons'
+import { useActionData, Form, redirect } from "react-router-dom"
+import {
+  getAuth,
+  onAuthStateChanged,
+  isSignInWithEmailLink,
+  sendSignInLinkToEmail,
+  signInWithEmailLink,
+  updateProfile,
+  updatePassword
+} from "firebase/auth"
+import { useEffect, useState } from "react"
 import { firebaseErrorParse } from '../libs/functions'
+import { ViewOffIcon, ViewIcon } from '@chakra-ui/icons'
 import {
   Grid,
   FormControl,
   FormLabel,
   Input,
+  InputGroup,
+  InputRightElement,
   Button,
   useToast,
-  IconButton,
-  Flex
+  VisuallyHiddenInput
 } from '@chakra-ui/react'
 
+export async function loader() {
+  return await new Promise(resolve => 
+    onAuthStateChanged(getAuth(), user => resolve(user))) &&
+    redirect('/')
+}
+
 export async function action({ request }) {
+  const auth = getAuth();
   const formData = await request.formData()
-  const form = Object.fromEntries(formData.entries())
-  form.musicians = formData.getAll('musician')
-  if (form.password !== form.confirmation) {
-    return {error: {message: 'Пароль и повтор пароля не совпадают'}}
-  }
   try {
-    const db = getDatabase()
-    const user = (await createUser(getAuth(), form.email, form.password)).user
-    const bandKey = push(ref(db, 'bands'), {name: form.band, admin: user.uid}).key
-    set(ref(db, `quickBands/${bandKey}`), {name: form.band})
-    form.musicians.map(item => {
-      push(ref(db, `bands/${bandKey}/musicians`), {name: item})
-    })
-    return redirect(`/admin/${user.uid}`)
+    if (formData.has('sendlink')) {
+      const actionCodeSettings = {url: location.href, handleCodeInApp: true}
+      const email = formData.get('email')
+      await sendSignInLinkToEmail(auth, email, actionCodeSettings)
+      localStorage.setItem('firebase-auth-email', email)
+      return {
+        success: true,
+        description: `Проверьте вашу электронную почту ${email}`
+      }
+    } else {
+      if (formData.get('password') !== formData.get('confirmation')) {
+        return {
+          error: true,
+          description: 'Пароль и повтор пароля не совпадают'
+        }
+      }
+      await signInWithEmailLink(auth, formData.get('email'), location.href)
+      await updateProfile(auth.currentUser, {displayName: formData.get('name')})
+      await updatePassword(auth.currentUser, formData.get('password'))
+      localStorage.removeItem('firebase-auth-email')
+      return redirect('/')
+    }
   } catch (error) {
-    return {error: error}
+    return {
+      error: true,
+      description: firebaseErrorParse(error)
+    }    
   }
 }
 
 export default function Registration() {
-  const [musicians, setMusicians] = useState([(new Date).getTime()])
+  const auth = getAuth();
+  const signIn = isSignInWithEmailLink(auth, window.location.href)
   const actionData = useActionData()
   const toast = useToast()
-  const addMusician = () => setMusicians([...musicians, (new Date).getTime()])
-  const removeMusician = index => {
-    let newMusicians = [...musicians]
-    newMusicians.splice(index, 1);
-    setMusicians(newMusicians)
-  }
+  const email = localStorage.getItem('firebase-auth-email')
+  const [pass, setPass] = useState([true, true])
   useEffect(() => {
-    if (actionData && actionData.error) {
-      toast({status: 'error', title: firebaseErrorParse(actionData.error)})
-    }
+    actionData && actionData.error && toast({
+      status: 'error',
+      title: 'Что-то пошло не так...',
+      description: actionData.description,
+      duration: 4000,
+      isClosable: true,
+    })
+    actionData && actionData.success && toast({
+      status: 'success',
+      title: 'Отлично!',
+      description: actionData.description,
+      duration: null,
+      isClosable: true
+    })
   }, [actionData])
   return (
-    <Form method='post'>
-      <Grid gap={2} maxW='460' m='0 auto'>
-        <FormControl>
-          <FormLabel>Логин:</FormLabel>
-          <Input name='email' required/>
-        </FormControl>
-        <FormControl>
-          <FormLabel>Пароль:</FormLabel>
-          <Input name='password' type='password' required />
-        </FormControl>
-        <FormControl>
-          <FormLabel>Повтор пароля:</FormLabel>
-          <Input name='confirmation' type='password' required />
-        </FormControl>
-        <FormControl>
-          <FormLabel>Название группы:</FormLabel>
-          <Input name='band' required />
-        </FormControl>
-        <FormControl>
-          <FormLabel>Музыканты:</FormLabel>
-          {musicians.map((item, index) => 
-            <Flex key={item}>
-              <Input name='musician' mb={2} required/>
-              <IconButton
-                icon={<SmallCloseIcon />}
-                onClick={e => {removeMusician(index)}}
-                ml={2}
-              />
-            </Flex>
-          )}
-          <IconButton icon={<SmallAddIcon />} onClick={addMusician}/>
-        </FormControl>
-        {!!musicians.length && <Button type='submit' mt={6}>Регистрация</Button>}
-      </Grid>
-    </Form>
+    <Grid alignContent='center' justifyContent='center'>
+      {signIn ? (
+        <Form method='post'>
+          <Grid gap={2}>
+            <FormControl>
+              <FormLabel>Email:</FormLabel>
+              <Input name='email' defaultValue={email} required/>
+            </FormControl>
+            <FormControl>
+              <FormLabel>Имя:</FormLabel>
+              <Input name='name' required/>
+            </FormControl>
+            <FormControl>
+              <FormLabel>Пароль:</FormLabel>
+              <InputGroup>
+                <Input type={pass[0] ? 'password' : 'text'} name='password' required/>
+                <InputRightElement>
+                  <Button onClick={e => {setPass([!pass[0], pass[1]])}} variant='unstyled'>
+                    {pass[0] ? <ViewIcon /> : <ViewOffIcon />}
+                  </Button>
+                </InputRightElement>
+              </InputGroup>
+            </FormControl>
+            <FormControl>
+              <FormLabel>Повтор пароля:</FormLabel>
+              <InputGroup>
+                <Input type={pass[1] ? 'password' : 'text'} name='confirmation' required/>
+                <InputRightElement>
+                  <Button onClick={e => {setPass([pass[0], !pass[1]])}} variant='unstyled'>
+                    {pass[1] ? <ViewIcon /> : <ViewOffIcon />}
+                  </Button>
+                </InputRightElement>
+              </InputGroup>
+            </FormControl>
+            <Button type='submit' mt={6}>Регистрация</Button>
+          </Grid>
+        </Form>
+        ) : (
+        <Form method='post'>
+          <VisuallyHiddenInput name='sendlink'/>
+          <Grid gap={2}>
+            <FormControl>
+              <FormLabel>Email:</FormLabel>
+              <Input name='email' required/>
+            </FormControl>
+            { (!actionData || actionData.error) &&
+              <Button type='submit' mt={2}>Получить ссылку</Button>
+            }
+          </Grid>
+        </Form>
+      )}
+    </Grid>
   )
 }
