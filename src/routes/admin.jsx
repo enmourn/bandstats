@@ -1,22 +1,25 @@
 import { useState } from 'react'
 import { getAuth, onAuthStateChanged } from "firebase/auth"
-import { getDatabase, ref, child, get, set} from "firebase/database";
-import { useLoaderData, Form } from "react-router-dom";
+import { getDatabase, ref, get, set } from "firebase/database";
+import { useLoaderData } from "react-router-dom";
 import CalendarEvents from '../components/CalendarEvents'
 import FormEvent from '../components/FormEvent'
 import { Grid } from '@chakra-ui/react'
 import { useEffect } from 'react';
 
 export async function loader({ params }) {
-  const band = await get(child(ref(getDatabase()), `bands/${params.bandKey}`))
-    .then(snapshot => snapshot.val())
+  const db = getDatabase()
+  const band = await get(ref(db, `bands/${params.bandKey}`))
+    .then(snapshot => snapshot?.val())
   if (!band) throw new Response("", {
     status: 404,
     statusText: "Not Found"
   })
   const user = await new Promise(resolve => 
     onAuthStateChanged(getAuth(), user => resolve(user)))
-  if (!user || user.uid != band.admin) throw new Response("", {
+  const role = user && await get(ref(db, `roles/${user.uid}`))
+    .then(snapshot => snapshot?.val())
+  if (!user || !role?.bands[params.bandKey]) throw new Response("", {
     status: 403,
     statusText: "Forbidden"
   })

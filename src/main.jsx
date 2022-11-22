@@ -65,7 +65,7 @@ const router = createBrowserRouter([
         action: registrationAction
       },
       {
-        path: ':bandKey/admin',
+        path: ':bandKey',
         element: <Admin />,
         loader: adminLoader,
         action: adminAction
