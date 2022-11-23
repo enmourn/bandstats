@@ -4,7 +4,7 @@ import { Grid, Flex, Spinner } from '@chakra-ui/react'
 export default function Root() {
   const navigation = useNavigation()
   return (
-    <Grid w='100vw' h='100vh' p={4}>
+    <Grid w='100vw' maxW={758} h='100vh' p={4} m='auto'>
       <Outlet />
       <Flex
         pos='fixed'
