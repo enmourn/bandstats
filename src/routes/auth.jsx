@@ -1,5 +1,10 @@
 import { useActionData, Form, redirect } from "react-router-dom"
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth"
+import {
+  getAuth,
+  onAuthStateChanged,
+  signInWithEmailAndPassword as signIn,
+  signOut
+} from "firebase/auth"
 import { useState, useEffect } from "react"
 import { ViewOffIcon, ViewIcon } from '@chakra-ui/icons'
 import { firebaseErrorParse } from '../libs/functions'
@@ -15,33 +20,53 @@ import {
 } from '@chakra-ui/react'
 
 export async function loader() {
-  return await new Promise(resolve => 
-    onAuthStateChanged(getAuth(), user => resolve(user))) &&
-    redirect('/')
+  return await new Promise(resolve => onAuthStateChanged(
+    getAuth(), user => resolve(user?.emailVerified && redirect('/'))))
 }
 
 export async function action({ request }) {
-  const auth = getAuth();
   const formData = await request.formData()
-  const email = formData.get('email')
-  const password = formData.get('password')
-  return await signInWithEmailAndPassword(auth, email, password)
-    .catch(error => {
+  const auth = getAuth()
+  try {
+    await signIn(auth, formData.get('email'), formData.get('password'))
+    if (!auth.currentUser?.emailVerified) {
+      await signOut(auth)
       return {
         error: true,
-        description: firebaseErrorParse(error)
+        description: 'Электронный адрес не подтвержден.'
       }
-    })
+    }
+  } catch (error) {
+    return {
+      error: true,
+      description: firebaseErrorParse(error)
+    }
+  }
 }
 
 export default function Auth() {
   const [pass, setPass] = useState(true)
   const actionData = useActionData()
   const toast = useToast()
+  const email = (new URLSearchParams(location.search)).get('new')
+  useEffect(() => {
+    email && toast({
+      status: 'success',
+      title: 'Создан новый аккаунт',
+      description: `Для входа необходимо подтвердить электронный адрес,
+        перейдя по ссылке в письме. Проверьте почту ${email}, письмо 
+        может быть в папке со спамом.`,
+      duration: null,
+      isClosable: true
+    })
+  }, [])
+  useEffect(() => {
+    return toast.closeAll
+  }, [email])
   useEffect(() => {
     actionData && actionData.error && toast({
       status: 'error',
-      title: 'Что-то пошло не так...',
+      title: 'Ошибка при авторизации',
       description: actionData.description,
       duration: 4000,
       isClosable: true,
@@ -53,7 +78,7 @@ export default function Auth() {
         <Grid gap={2}>
           <FormControl>
             <FormLabel>Email:</FormLabel>
-            <Input name='email' required/>
+            <Input name='email' defaultValue={email} required/>
           </FormControl>
           <FormControl>
             <FormLabel>Пароль:</FormLabel>
@@ -61,7 +86,7 @@ export default function Auth() {
               <Input type={pass ? 'password' : 'text'} name='password' required/>
               <InputRightElement>
                 <Button onClick={e => {setPass(!pass)}} variant='unstyled'>
-                  {pass ? <ViewIcon /> : <ViewOffIcon />}
+                  {pass ? <ViewIcon color='gray.200'/> : <ViewOffIcon color='gray.200'/>}
                 </Button>
               </InputRightElement>
             </InputGroup>
