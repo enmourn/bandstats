@@ -6,7 +6,7 @@ export default function CalendarEvents({events, click}) {
   const [dateCurrent, setDateCurrent] = useState(dateNow)
   const calendarGetDates = () => {
     let year = dateCurrent.getFullYear()
-    let month = dateCurrent.getMonth() + 1
+    let month = ('0' + (dateCurrent.getMonth() + 1)).slice(-2)
     let dates = {}
     for (let key in events) {
       if (key.slice(0, 7) === `${year}-${month}`) {
