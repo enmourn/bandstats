@@ -6,7 +6,6 @@ import {
   FormLabel,
   Input,
   Grid,
-  Flex,
   Text,
   Textarea,
   GridItem,
@@ -27,12 +26,12 @@ const Musician = ({musician}) => {
         >{musician.name}</Checkbox>
       {checked && 
         <Grid templateColumns='repeat(2, 1fr)' gap={2}>
-          <VisuallyHiddenInput name='musician' defaultValue={musician.id} />
+          <VisuallyHiddenInput name='musician' defaultValue={musician.key} />
           <FormControl>
             <FormLabel mb={0}>Приход:</FormLabel>
             <Input
               type='time'
-              name={`${musician.id}-start`}
+              name={`${musician.key}-start`}
               defaultValue={musician.start}
               isRequired
               bg='white'
@@ -42,7 +41,7 @@ const Musician = ({musician}) => {
             <FormLabel mb={0}>Уход:</FormLabel>
             <Input
               type='time'
-              name={`${musician.id}-end`}
+              name={`${musician.key}-end`}
               defaultValue={musician.end}
               isRequired
               bg='white'
@@ -57,28 +56,25 @@ const Musician = ({musician}) => {
 export default function FormEvent({event, musicians}) {
   const submit = useSubmit()
   const checkboxes = Object.keys(musicians).map(key => {
-    let musician = {id: key, name: musicians[key]}
-    event?.musicians && (musician = {...event.musicians[key], ...musician})
+    let musician = {...musicians[key], key: key}
+    event?.musicians?.[key] && (musician = {...event.musicians[key], ...musician})
     return musician
   })
-  const title = event.date.toLocaleString("ru", {
+  const title = (new Date(event.date)).toLocaleString("ru", {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
     weekday: 'long',
   })
-  let date = event.date.getFullYear() + '/'
-  date += (event.date.getMonth() + 1) + '/'
-  date += event.date.getDate()
   const handleDelete = () => {
     let formData = new FormData
     formData.append('delete', true)
-    formData.append('date', date)
+    formData.append('date', event.date)
     submit(formData, {method: 'post'})
   }
   return (
     <Form key={event.date} method='post'>
-      <VisuallyHiddenInput name='date' defaultValue={date} />
+      <VisuallyHiddenInput name='date' defaultValue={event.date} />
       <Text
         css={{"&:first-letter": {textTransform: "uppercase"}}}
         textAlign='center'
@@ -117,8 +113,8 @@ export default function FormEvent({event, musicians}) {
           <FormControl>
             <FormLabel>Участники:</FormLabel>
             <Grid gap={3}>
-              {checkboxes.map((item, index) => 
-                <Musician key={item.id} musician={item} />
+              {checkboxes.map(item => 
+                <Musician key={item.key} musician={item} />
               )}
             </Grid>
           </FormControl>

@@ -7,7 +7,13 @@ export default function CalendarEvents({events, click}) {
   const calendarGetDates = () => {
     let year = dateCurrent.getFullYear()
     let month = dateCurrent.getMonth() + 1
-    return events?.[year]?.[month] || {}
+    let dates = {}
+    for (let key in events) {
+      if (key.slice(0, 7) === `${year}-${month}`) {
+        dates[parseInt(key.slice(8, 10))] = events[key]
+      }
+    }
+    return dates
   }
   const calendarPrev = () => {
     let datePrev = new Date(dateCurrent.getFullYear(), dateCurrent.getMonth() - 1)

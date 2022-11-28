@@ -52,11 +52,11 @@ export default function Admin() {
   const band = useLoaderData()
   const [event, setEvent] = useState()
   const calendarClick = date => {
-    let year = date.getFullYear()
-    let month = date.getMonth()
-    let day = date.getDate()
-    let event = band?.events?.[year]?.[month + 1]?.[day] || {}
-    event.date = date
+    let dateISO = date.getFullYear() + '-'
+    dateISO += ('0' + (date.getMonth() + 1)).slice(-2) + '-'
+    dateISO += ('0' + date.getDate()).slice(-2)
+    let event = band?.events?.[dateISO] || {}
+    event.date = dateISO
     setEvent(event)
   }
   useEffect(() => {
