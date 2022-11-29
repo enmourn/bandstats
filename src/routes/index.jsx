@@ -7,7 +7,6 @@ import {
   Grid,
   Flex,
   Link,
-  Button,
 } from '@chakra-ui/react'
 
 export async function loader() {
@@ -23,6 +22,22 @@ export async function loader() {
   return [user, role]
 }
 
+const BandRole = ({ link, band }) => (
+  <>
+  {(band.rights == 'user' || band.rights == 'admin') && 
+    <Link as={RouterLink} to={link}>
+      <Text as='span' textTransform='uppercase'>{band.name}</Text>
+    </Link>
+  }
+  {band.rights == 'admin' &&
+    <Link as={RouterLink} to={link + '/admin'}>
+      <Text as='span' textTransform='uppercase'>{band.name}</Text>
+      <Text as='span'> (админ)</Text>
+    </Link>
+  }
+  </>
+)
+
 export default function Index() {
   const [user, role] = useLoaderData()
   return (
@@ -33,12 +48,10 @@ export default function Index() {
           <Text>{user.displayName || user.email}</Text>
           <Text>Добро пожаловать!</Text>
           {role &&
-            <Grid justifyItems='center' gap={2}>
-              <Text mt={12}>Доступные проекты:</Text>
+            <Grid justifyItems='center'>
+              <Text mt={12} mb={2}>Доступные проекты:</Text>
               {Object.keys(role.bands).map(key => 
-                <Link as={RouterLink} key={key} to={key}>
-                  <Button>{role.bands[key].name}</Button>
-                </Link>
+                <BandRole key={key} link={key} band={role.bands[key]} />
               )}
             </Grid>
           }

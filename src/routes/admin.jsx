@@ -9,20 +9,17 @@ import { useEffect } from 'react';
 
 export async function loader({ params }) {
   const db = getDatabase()
+  const res404 = new Response('', {status: 404, statusText: 'Not Found'})
+  const res403 = new Response('', {status: 403, statusText: 'Forbidden'})
   const band = await get(ref(db, `bands/${params.bandKey}`))
     .then(snapshot => snapshot?.val())
-  if (!band) throw new Response("", {
-    status: 404,
-    statusText: "Not Found"
-  })
+  if (!band) throw res404
   const user = await new Promise(resolve => 
     onAuthStateChanged(getAuth(), user => resolve(user)))
+  if (!user) throw res404
   const role = user && await get(ref(db, `roles/${user.uid}`))
     .then(snapshot => snapshot?.val())
-  if (!user || !role?.bands[params.bandKey]) throw new Response("", {
-    status: 403,
-    statusText: "Forbidden"
-  })
+  if (!role?.bands[params.bandKey]?.rights === 'admin') throw res403
   return band
 }
 

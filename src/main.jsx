@@ -13,6 +13,8 @@ import Auth, {
 import Registration,  {
   loader as registrationLoader,
   action as registrationAction } from './routes/registration'
+import Band, {
+  loader as bandLoader } from './routes/band'
 import Admin, {
   loader as adminLoader,
   action as adminAction } from './routes/admin'
@@ -37,6 +39,12 @@ const theme = extendTheme({
             bg: "white"
           }
         }
+      }
+    },
+    Link: {
+      baseStyle: {
+        textDecoration: 'underline',
+        color: 'teal'
       }
     }
   }
@@ -66,6 +74,11 @@ const router = createBrowserRouter([
       },
       {
         path: ':bandKey',
+        element: <Band />,
+        loader: bandLoader
+      },
+      {
+        path: ':bandKey/admin',
         element: <Admin />,
         loader: adminLoader,
         action: adminAction
