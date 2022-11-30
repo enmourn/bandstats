@@ -1,10 +1,8 @@
 import { Grid, Heading } from "@chakra-ui/react";
 import { getAuth, onAuthStateChanged } from "firebase/auth"
 import { getDatabase, ref, get, set } from "firebase/database"
-import { useState } from "react"
-import { useEffect, useRef } from "react"
 import { useLoaderData } from "react-router-dom"
-import { LineChart, Line, CartesianGrid, XAxis, YAxis, Legend } from 'recharts'
+import { LineChart, Line, CartesianGrid, XAxis, Legend} from 'recharts'
 
 export async function loader({ params }) {
   const db = getDatabase()
@@ -41,12 +39,16 @@ export async function loader({ params }) {
   let musiciansStat = []
   for (start; start <= end; start.setMonth(start.getMonth() + 1)) {
     // month
+    let monthName = start.toLocaleString('default', {
+      month: 'short',
+      year: '2-digit'
+    }).slice(0, -3).replace(' ', '')
     let bandStatItem = {
-      name: start.toLocaleString('default', { month: 'long' }),
+      name: monthName,
       activity: 0
     }
     let musiciansStatItem = {
-      name: start.toLocaleString('default', { month: 'long' }),
+      name: monthName,
       ...Object.keys(band.musicians).reduce((accum, current) => {
         accum[current] = 0
         return accum
@@ -72,33 +74,47 @@ export async function loader({ params }) {
 
 export default function Band() {
   const {band, bandStat, musiciansStat} = useLoaderData()
-  const container = useRef(null)
-  const [width, setWidth] = useState(0)
-  useEffect(() => {
-    setWidth(container.current.clientWidth)
-  }, [])
+  const colors = [
+    '#2ecc71', '#3498db', '#9b59b6', '#34495e',
+    '#f1c40f', '#e67e22', '#e74c3c'
+  ]
   return (
-    <Grid alignContent='start' ref={container}>
+    <Grid alignContent='start'>
       <Heading as='h1' size='xl' mb={2}>{band.name}</Heading>
       <Heading as='h2' size='md' mb={2}>Активность группы</Heading>
-      <LineChart width={width} height={width * 0.6} data={bandStat} margin={{left: -16}}>
-        <XAxis dataKey="name" />
-        <YAxis/>
-        <CartesianGrid strokeDasharray="3 3" />
-        <Line type="monotone" dataKey="activity" stroke="teal" fillOpacity={1} fill="url(#colorUv)" />
-      </LineChart>
+      <Grid overflowX='auto'>
+        <LineChart
+          data={bandStat}
+          width={bandStat.length * 80}
+          height={200}
+          margin={{left: 30, right: 30, bottom: 10}}
+        >
+          <XAxis dataKey="name" />
+          <CartesianGrid strokeDasharray="3 3" />
+          <Line type="monotone" dataKey="activity" stroke="teal" fillOpacity={1} fill="url(#colorUv)" />
+        </LineChart>
+      </Grid>
       <Heading as='h2' size='md' mb={2} mt={2}>Активность участников</Heading>
-      <LineChart width={width} height={width * 0.8} data={musiciansStat} margin={{left: -16}}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" />
-        <YAxis />
-        <Legend />
-        <Line type="monotone" dataKey="aleksandrkazarin" stroke="teal" />
-        <Line type="monotone" dataKey="ivanmishin" stroke="teal" />
-        <Line type="monotone" dataKey="nikitasmirnov" stroke="teal" />
-        <Line type="monotone" dataKey="vitalijpotapov" stroke="teal" />
-        <Line type="monotone" dataKey="аleksejrumyancev" stroke="teal" />
-      </LineChart>
+      <Grid overflowX='auto'>
+      <LineChart
+          data={musiciansStat}
+          width={musiciansStat.length * 80}
+          height={300}
+          margin={{left: 30, right: 30, bottom: 10}}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <Legend />
+          {Object.keys(band.musicians).map((key, index) => 
+            <Line
+              key={key}
+              type="monotone"
+              dataKey={key}
+              stroke={colors[index] || 'teal'}
+            />
+          )}
+        </LineChart>
+      </Grid>
     </Grid>
   )
 }
