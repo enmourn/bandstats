@@ -1,0 +1,314 @@
+{
+  "bands": {
+    "digmenograve": {
+      "musicians": {
+        "aleksandrkazarin": {
+          "name": "Александр Казарин"
+        },
+        "ivanmishin": {
+          "name": "Иван Мишин"
+        },
+        "nikitasmirnov": {
+          "name": "Никита Смирнов"
+        },
+        "vitalijpotapov": {
+          "name": "Виталий Потапов"
+        },
+        "аleksejrumyancev": {
+          "name": "Алексей Румянцев"
+        }
+      },
+      "name": "Dig Me No Grave",
+      "events": {
+        "2022-08-23": {
+          "comment": "Отыграли программу.",
+          "end": "22:00",
+          "musicians": {
+            "aleksandrkazarin": {
+              "end": "21:40",
+              "start": "20:10"
+            },
+            "ivanmishin": {
+              "end": "21:40",
+              "start": "20:00"
+            },
+            "nikitasmirnov": {
+              "end": "21:40",
+              "start": "20:20"
+            },
+            "vitalijpotapov": {
+              "end": "21:40",
+              "start": "20:00"
+            },
+            "аleksejrumyancev": {
+              "end": "21:40",
+              "start": "20:00"
+            }
+          },
+          "start": "20:00"
+        },
+        "2022-08-25": {
+          "comment": "Отыграли программу 2 раза.",
+          "end": "22:00",
+          "musicians": {
+            "aleksandrkazarin": {
+              "end": "21:50",
+              "start": "20:00"
+            },
+            "ivanmishin": {
+              "end": "21:50",
+              "start": "20:00"
+            },
+            "nikitasmirnov": {
+              "end": "21:50",
+              "start": "20:00"
+            }
+          },
+          "start": "20:00"
+        },
+        "2022-08-30": {
+          "comment": "Отыграли программу 2 раза.",
+          "end": "22:00",
+          "musicians": {
+            "aleksandrkazarin": {
+              "end": "22:00",
+              "start": "20:00"
+            },
+            "ivanmishin": {
+              "end": "22:00",
+              "start": "20:00"
+            },
+            "nikitasmirnov": {
+              "end": "22:00",
+              "start": "20:10"
+            },
+            "аleksejrumyancev": {
+              "end": "22:00",
+              "start": "20:05"
+            }
+          },
+          "start": "20:00"
+        },
+        "2022-09-01": {
+          "comment": "Отыграли программу 2 раза.",
+          "end": "22:00",
+          "musicians": {
+            "aleksandrkazarin": {
+              "end": "22:00",
+              "start": "20:00"
+            },
+            "ivanmishin": {
+              "end": "22:00",
+              "start": "20:00"
+            },
+            "nikitasmirnov": {
+              "end": "22:00",
+              "start": "20:00"
+            },
+            "vitalijpotapov": {
+              "end": "22:00",
+              "start": "20:00"
+            },
+            "аleksejrumyancev": {
+              "end": "22:00",
+              "start": "20:00"
+            }
+          },
+          "start": "20:00"
+        },
+        "2022-09-06": {
+          "comment": "Первый час репы Саня разбирал фары Турика, Никита и Ваня чекали Under The Bloody Moon под метр. Оставшееся время пытались сочинять.",
+          "end": "22:00",
+          "musicians": {
+            "aleksandrkazarin": {
+              "end": "21:30",
+              "start": "21:00"
+            },
+            "ivanmishin": {
+              "end": "21:30",
+              "start": "20:05"
+            },
+            "nikitasmirnov": {
+              "end": "21:30",
+              "start": "20:00"
+            }
+          },
+          "start": "20:00"
+        },
+        "2022-09-08": {
+          "comment": "Играли под метр, сочиняли.",
+          "end": "22:00",
+          "musicians": {
+            "aleksandrkazarin": {
+              "end": "22:00",
+              "start": "21:20"
+            },
+            "ivanmishin": {
+              "end": "22:00",
+              "start": "20:20"
+            },
+            "nikitasmirnov": {
+              "end": "22:00",
+              "start": "20:00"
+            }
+          },
+          "start": "20:00"
+        },
+        "2022-09-13": {
+          "comment": "Играли под метр.",
+          "end": "22:00",
+          "musicians": {
+            "aleksandrkazarin": {
+              "end": "21:50",
+              "start": "20:00"
+            },
+            "ivanmishin": {
+              "end": "21:50",
+              "start": "20:00"
+            },
+            "vitalijpotapov": {
+              "end": "21:50",
+              "start": "20:00"
+            }
+          },
+          "start": "20:00"
+        },
+        "2022-09-15": {
+          "comment": "Сыграли три песни под метр.",
+          "end": "22:00",
+          "musicians": {
+            "aleksandrkazarin": {
+              "end": "21:10",
+              "start": "20:00"
+            },
+            "ivanmishin": {
+              "end": "21:10",
+              "start": "20:05"
+            },
+            "аleksejrumyancev": {
+              "end": "21:10",
+              "start": "20:00"
+            }
+          },
+          "start": "20:00"
+        },
+        "2022-09-27": {
+          "comment": "Выучили People Of The Pit.",
+          "end": "22:00",
+          "musicians": {
+            "aleksandrkazarin": {
+              "end": "21:30",
+              "start": "20:00"
+            },
+            "ivanmishin": {
+              "end": "21:30",
+              "start": "20:00"
+            },
+            "nikitasmirnov": {
+              "end": "21:30",
+              "start": "20:00"
+            }
+          },
+          "start": "20:00"
+        },
+        "2022-09-29": {
+          "comment": "Начали учить Pyrexia.",
+          "end": "22:00",
+          "musicians": {
+            "aleksandrkazarin": {
+              "end": "21:15",
+              "start": "20:00"
+            },
+            "ivanmishin": {
+              "end": "21:15",
+              "start": "20:00"
+            },
+            "nikitasmirnov": {
+              "end": "21:15",
+              "start": "20:00"
+            }
+          },
+          "start": "20:00"
+        },
+        "2022-10-20": {
+          "comment": "Продолжили учить Pyrexia, доиграли до повтора 1 рифа, вспомнили People Of The Pit.",
+          "end": "22:00",
+          "musicians": {
+            "aleksandrkazarin": {
+              "end": "21:40",
+              "start": "20:00"
+            },
+            "ivanmishin": {
+              "end": "21:40",
+              "start": "20:10"
+            },
+            "nikitasmirnov": {
+              "end": "21:40",
+              "start": "20:00"
+            },
+            "аleksejrumyancev": {
+              "end": "21:40",
+              "start": "20:00"
+            }
+          },
+          "start": "20:00"
+        },
+        "2022-11-22": {
+          "comment": "Вспомнили People of the pit, прогнали Pyrexia до повтора первого рифа",
+          "end": "22:00",
+          "musicians": {
+            "aleksandrkazarin": {
+              "end": "21:35",
+              "start": "20:00"
+            },
+            "ivanmishin": {
+              "end": "21:35",
+              "start": "20:10"
+            },
+            "аleksejrumyancev": {
+              "end": "21:35",
+              "start": "20:10"
+            }
+          },
+          "start": "20:00"
+        },
+        "2022-11-24": {
+          "comment": "Вспомнили Cosmic Cult, People Of The Pit, доиграли Pyrexia до среднего рифа",
+          "end": "22:00",
+          "musicians": {
+            "aleksandrkazarin": {
+              "end": "22:00",
+              "start": "20:00"
+            },
+            "ivanmishin": {
+              "end": "22:00",
+              "start": "20:00"
+            },
+            "nikitasmirnov": {
+              "end": "22:00",
+              "start": "20:10"
+            },
+            "vitalijpotapov": {
+              "end": "22:00",
+              "start": "20:10"
+            },
+            "аleksejrumyancev": {
+              "end": "22:00",
+              "start": "20:05"
+            }
+          },
+          "start": "20:00"
+        }
+      }
+    }
+  },
+  "roles": {
+    "i3eEPGR67pT9SDkmhq9AI1Xi6q02": {
+      "bands": {
+        "digmenograve": {
+          "rights": "admin"
+        }
+      }
+    }
+  }
+}
