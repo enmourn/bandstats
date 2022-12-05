@@ -2,7 +2,6 @@ import { Grid, Flex, Heading, Box, Text, GridItem } from "@chakra-ui/react";
 import { getAuth, onAuthStateChanged } from "firebase/auth"
 import { getDatabase, ref, get, set } from "firebase/database"
 import { useLoaderData } from "react-router-dom"
-import * as json from '../../db.json'
 import { StarIcon } from '@chakra-ui/icons'
 import {
   Chart as ChartJS,
@@ -133,72 +132,72 @@ const getBandActivity = band => {
 }
 
 export async function loader({ params }) {
-  // const db = getDatabase()
-  // const res404 = new Response('', {status: 404, statusText: 'Not Found'})
-  // const res403 = new Response('', {status: 403, statusText: 'Forbidden'})
-  // const bandDB = await get(ref(db, `bands/${params.bandKey}`))
-  //   .then(snapshot => snapshot?.val())
-  // if (!bandDB) throw res404
-  // const user = await new Promise(resolve => 
-  //   onAuthStateChanged(getAuth(), user => resolve(user)))
-  // if (!user) throw res404
-  // const role = user && await get(ref(db, `roles/${user.uid}`))
-  //   .then(snapshot => snapshot?.val())
-  // if (!role?.bands[params.bandKey]?.rights === 'user') throw res403
-  let band = getExtendBand(json.bands.digmenograve)
-  let bandActivity = getBandActivity(band)
-  return {band, bandActivity}
+  const db = getDatabase()
+  const res404 = new Response('', {status: 404, statusText: 'Not Found'})
+  const res403 = new Response('', {status: 403, statusText: 'Forbidden'})
+  const band = await get(ref(db, `bands/${params.bandKey}`))
+    .then(snapshot => snapshot?.val())
+  if (!band) throw res404
+  const user = await new Promise(resolve => 
+    onAuthStateChanged(getAuth(), user => resolve(user)))
+  if (!user) throw res404
+  const role = user && await get(ref(db, `roles/${user.uid}`))
+    .then(snapshot => snapshot?.val())
+  if (!role?.bands[params.bandKey]?.rights === 'user') throw res403
+  return getExtendBand(band)
 }
 
-const BandActivity = ({band, bandActivity}) => (
-  <Grid>
-    <Heading as='h2' size='md' mb={2}>Активность группы</Heading>
-    <Grid overflowX='scroll' css={{
-      '&::-webkit-scrollbar': {
-        height: '6px'
-      },
-      '&::-webkit-scrollbar-track': {
-        background: '#eee',
-      },
-      '&::-webkit-scrollbar-thumb': {
-        background: '#ccc',
-        borderRadius: '24px',
-      },
-    }}>
-      <Box w={bandActivity.labels.length * 100} mb={2}>
-        <Bar data={bandActivity} options={{
-          plugins: {
-            legend: {
-              display: false,
+const Activity = ({band}) => {
+  const bandActivity = getBandActivity(band)
+  return (
+    <Grid>
+      <Heading as='h2' size='md' mb={2}>Активность группы</Heading>
+      <Grid overflowX='scroll' css={{
+        '&::-webkit-scrollbar': {
+          height: '6px'
+        },
+        '&::-webkit-scrollbar-track': {
+          background: '#eee',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          background: '#ccc',
+          borderRadius: '24px',
+        },
+      }}>
+        <Box w={bandActivity.labels.length * 100} mb={2}>
+          <Bar data={bandActivity} options={{
+            plugins: {
+              legend: {
+                display: false,
+              }
             }
-          }
-        }}/>
-      </Box>
+          }}/>
+        </Box>
+      </Grid>
+      <Flex wrap='wrap' mt={4}>
+        {Object.keys(band.musicians).map(key => 
+          <Flex key={key} mr={4}>
+            <StarIcon color={band.musicians[key].color} mr={1} />
+            <Text fontSize={12}>{band.musicians[key].name}</Text>
+          </Flex>
+        )}
+      </Flex>
     </Grid>
-    <Flex wrap='wrap' mt={4}>
-      {Object.keys(band.musicians).map(key => 
-        <Flex key={key} mr={4} mb={1}>
-          <StarIcon color={band.musicians[key].color} mr={1} />
-          <Text fontSize={12}>{band.musicians[key].name}</Text>
-        </Flex>
-      )}
-    </Flex>
-  </Grid>
-)
-const BandMusiciansItem = ({value}) => {
-  const {bMus, eventCount} = value
+  )
+}
+const Musician = ({band, item}) => {
+  const musician = band.musicians[item]
+  const eventCount = Object.keys(band.events).length
   return (
     <>
-    <Box>
-      <Heading as='h3' size='sm'>{bMus.name}</Heading>
-      <Text fontSize={12}>
-        Репетиции: {bMus.eventCount} из {eventCount}
-      </Text>
-      <Text fontSize={12}>
-        Активность: {parseInt(bMus.activityAvg * 100)}%
-      </Text>
+    <Box mr={2}>
+      <Heading as='h3' size='sm'>{musician.name}</Heading>
+      <Box fontSize={12} bg='#eee' pl={4}>
+        <Text>Репетиции: {musician.eventCount} из {eventCount}</Text>
+        <Text>Активность: {parseInt(musician.activityAvg * 100)}%</Text>
+      </Box>
     </Box>
-    <Box maxW={160} w='100%' pr={4}>
+    <Box>
       <Bar
         options={{
           plugins: {
@@ -223,9 +222,9 @@ const BandMusiciansItem = ({value}) => {
           labels: ['Активность'],
           datasets: [
             {
-              label: bMus.name,
-              data: [parseInt(bMus.activityAvg * 100)],
-              backgroundColor: bMus.color
+              label: musician.name,
+              data: [parseInt(musician.activityAvg * 100)],
+              backgroundColor: musician.color
             }
           ]
         }}
@@ -234,105 +233,116 @@ const BandMusiciansItem = ({value}) => {
     </>
   )
 }
-const BandMusicians = ({band}) => (
+const Musicians = ({band}) => (
   <Grid>
-    <Heading as='h2' size='md' mb={2}>Участники</Heading>
-    <Grid templateColumns='max-content 1fr' columnGap={2}>
-      {Object.keys(band.musicians).map(key => {
-        let bMus = band.musicians[key]
-        let eventCount = Object.keys(band.events).length
-        return <BandMusiciansItem key={key} value={{bMus, eventCount}} />
-      })}
+    <Heading as='h2' size='md' mb={3}>Участники</Heading>
+    <Grid templateColumns='max-content 160px'>
+      {Object.keys(band.musicians).map(key =>
+        <Musician key={key} band={band} item={key} />
+      )}
+    </Grid>
+  </Grid>
+)
+const Event = ({band, item}) => {
+  const event = band.events[item]
+  const heading = (new Date(event.start)).toLocaleString("ru", {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long',
+  })
+  const eventEfficiency = parseInt(event.efficiency * 100)
+  const eventEfficiencyLost = parseInt(event.efficiencyLost * 100)
+  const [pie, musicians] = (() => {
+    let pie = {
+      labels: [],
+      datasets: [{
+        data: [],
+        backgroundColor: []
+      }]
+    }
+    let musicians = []
+    Object.keys(band.musicians).map(key => {
+      let bMus = band.musicians[key]
+      let eMus = event.musicians?.[key]
+      let eMusEfficiency = parseInt(eMus?.efficiency * 100) || 0
+      if (eMus) musicians.push({
+        key: key,
+        name: bMus.name,
+        color: bMus.color,
+        efficiency: eMusEfficiency
+      })
+      pie.labels.push(bMus.name)
+      pie.datasets[0].data.push(eMusEfficiency)
+      pie.datasets[0].backgroundColor.push(bMus.color)
+    })
+    pie.labels.push('Неиспользованно')
+    pie.datasets[0].data.push(eventEfficiencyLost)
+    pie.datasets[0].backgroundColor.push('#eee')
+    return [pie, musicians]
+  })()
+  return (
+    <>
+    <Heading
+      as='h3'
+      size='sm'
+      gridColumn='1/3'
+      mb={2}
+      css={{
+        "&:first-letter": {
+          textTransform: "uppercase"}
+        }
+      }
+    >{heading}</Heading>
+    <Box mb={4} mr={2}>
+      <Pie data={pie} options={{
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }}/>
+      <Text textAlign='center' pl={2} pt={2}>
+        {eventEfficiency}%
+      </Text>
+    </Box>
+    <Box mb={4}>
+      {musicians.map(musician => 
+        <Flex key={musician.key}>
+          <StarIcon color={musician.color} mr={1}/>
+          <Text fontSize={12}>
+            {musician.name} {musician.efficiency}%
+          </Text>
+        </Flex>
+      )}
+      <Text fontSize={12} bg='#eee' p={2} mt={2} maxW={360}>
+        {event.comment}
+      </Text>
+    </Box>
+    </>
+  )
+}
+const Events = ({band}) => (
+  <Grid>
+    <Heading as='h2' size='md' mb={3}>Репетиции</Heading>
+    <Grid templateColumns='140px 1fr'>
+      {Object.keys(band.events).reverse().map(key => 
+        <Event key={key} band={band} item={key} />
+      )}
     </Grid>
   </Grid>
 )
 
 export default function Band() {
-  const {band, bandActivity} = useLoaderData()
+  const band = useLoaderData()
   return (
-    <Grid alignContent='start' gap={4}>
-      <Heading as='h1' textTransform='uppercase'>{band.name}</Heading>
-      <BandActivity band={band} bandActivity={bandActivity} />
-      <BandMusicians band={band} />
-      <Grid gap={4}>
-        <Heading as='h2' size='md'>Репетиции</Heading>
-        {Object.keys(band.events).reverse().map(key => {
-          let event = band.events[key]
-          let eventEfficiency = parseInt(event.efficiency * 100)
-          let eventEfficiencyLost = parseInt(event.efficiencyLost * 100)
-          let heading = (new Date(event.start)).toLocaleString("ru", {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            weekday: 'long',
-          })
-          let pie = {
-            labels: [],
-            datasets: [{
-              data: [],
-              backgroundColor: []
-            }]
-          }
-          let musicians = []
-          Object.keys(band.musicians).map(key => {
-            let bMus = band.musicians[key]
-            let eMus = event.musicians?.[key]
-            let eMusEfficiency = parseInt(eMus?.efficiency * 100) || 0
-            if (eMus) musicians.push({
-              key: key,
-              name: bMus.name,
-              color: bMus.color,
-              efficiency: eMusEfficiency
-            })
-            pie.labels.push(bMus.name)
-            pie.datasets[0].data.push(eMusEfficiency)
-            pie.datasets[0].backgroundColor.push(bMus.color)
-          })
-          pie.labels.push('Неиспользованно')
-          pie.datasets[0].data.push(eventEfficiencyLost)
-          pie.datasets[0].backgroundColor.push('#eee')
-          return (
-            <Grid key={key} templateColumns='140px 1fr' gap={2}>
-              <Heading
-                as='h3'
-                size='sm'
-                mb={1}
-                gridColumn='1/3'
-                css={{
-                  "&:first-letter": {
-                    textTransform: "uppercase"}
-                  }
-                }
-              >{heading}</Heading>
-              <Box>
-                <Pie data={pie} options={{
-                  plugins: {
-                    legend: {
-                      display: false
-                    }
-                  }
-                }}/>
-                <Text textAlign='center' pl={2} pt={2}>
-                  {eventEfficiency}%
-                </Text>
-              </Box>
-              <Box>
-                {musicians.map(musician => 
-                  <Flex key={musician.key}>
-                    <StarIcon color={musician.color} mr={1}/>
-                    <Text fontSize={12}>
-                      {musician.name} {musician.efficiency}%
-                    </Text>
-                  </Flex>
-                )}
-                <Text fontSize={12} bg='#eee' p={2} mt={2}>
-                  {event.comment}
-                </Text>
-              </Box>
-            </Grid>
-          )
-        })}
-      </Grid>
+    <>
+    <Heading as='h1' textTransform='uppercase' mb={3}>{band.name}</Heading>
+    <Grid alignContent='start' gap={6}>
+      <Activity band={band} />
+      <Musicians band={band} />
+      <Events band={band} />
     </Grid>
+    </>
   )
 }
