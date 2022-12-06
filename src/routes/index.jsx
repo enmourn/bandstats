@@ -15,8 +15,7 @@ export async function loader() {
   const db = getDatabase()
   const user = await new Promise(resolve =>
     onAuthStateChanged(getAuth(), user => resolve(user)))
-  const access = await get(ref(db, 'access')).
-    then(snapshot => snapshot.val())
+  const access = await get(ref(db, 'access')).then(snapshot => snapshot.val())
   return {user, access}
 }
 

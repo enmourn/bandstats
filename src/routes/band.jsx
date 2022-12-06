@@ -133,17 +133,19 @@ const getBandActivity = band => {
 
 export async function loader({ params }) {
   const db = getDatabase()
-  const res404 = new Response('', {status: 404, statusText: 'Not Found'})
-  const res403 = new Response('', {status: 403, statusText: 'Forbidden'})
+  const error404 = new Response('', {status: 404, statusText: 'Not Found'})
+  const error403 = new Response('', {status: 403, statusText: 'Forbidden'})
   const band = await get(ref(db, `bands/${params.bandKey}`))
     .then(snapshot => snapshot?.val())
-  if (!band) throw res404
+  if (!band) throw error404
   const user = await new Promise(resolve => 
     onAuthStateChanged(getAuth(), user => resolve(user)))
-  if (!user) throw res404
-  const role = user && await get(ref(db, `roles/${user.uid}`))
+  if (!user) throw error404
+  const accessBand = await get(ref(db, `access/${params.bandKey}`))
     .then(snapshot => snapshot?.val())
-  if (!role?.bands[params.bandKey]?.rights === 'user') throw res403
+  const right = accessBand?.users?.[user.uid]
+  const access = right === 'user' || right == 'admin'
+  if (!access) throw error403
   return getExtendBand(band)
 }
 
