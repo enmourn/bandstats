@@ -1,4 +1,4 @@
-import { useLoaderData, Link as RouterLink } from 'react-router-dom'
+import { useLoaderData, Link as RouterLink, useNavigate } from 'react-router-dom'
 import { getAuth, onAuthStateChanged } from "firebase/auth"
 import { getDatabase, ref, get } from "firebase/database";
 import {
@@ -7,62 +7,99 @@ import {
   Grid,
   Flex,
   Link,
+  Button,
 } from '@chakra-ui/react'
+import { LockIcon, UnlockIcon } from '@chakra-ui/icons'
 
 export async function loader() {
   const db = getDatabase()
-  const user = await new Promise(resolve => 
+  const user = await new Promise(resolve =>
     onAuthStateChanged(getAuth(), user => resolve(user)))
-  const role = user && await get(ref(db, `roles/${user.uid}`))
-    .then(snapshot => snapshot?.val())
-  if (role) for (let key in role.bands) {
-    role.bands[key].name = await get(ref(db, `bands/${key}/name`))
-      .then(snapshot => snapshot?.val())
-  }
-  return [user, role]
+  const access = await get(ref(db, 'access')).
+    then(snapshot => snapshot.val())
+  return {user, access}
 }
 
-const BandRole = ({ link, band }) => (
-  <>
-  {(band.rights == 'user' || band.rights == 'admin') && 
-    <Link as={RouterLink} to={link}>
-      <Text as='span' textTransform='uppercase'>{band.name}</Text>
-    </Link>
+const Auth = ({user}) => {
+  return (
+    <Flex justifyContent='center'>
+      {user ? 
+        <Text>{user.displayName || user.email}</Text>
+        :
+        <>
+        <Link to='auth' as={RouterLink}>Вход</Link>
+        <Text ml={2} mr={2}>|</Text>
+        <Link to='registration' as={RouterLink}>Регистрация</Link>
+        </>
+      }
+    </Flex>
+  )
+}
+const Access = ({access, user}) => {
+  const newBand = {
+    name: 'Новый проект',
+    users: {
+      all: 'user'
+    }
   }
-  {band.rights == 'admin' &&
-    <Link as={RouterLink} to={link + '/admin'}>
-      <Text as='span' textTransform='uppercase'>{band.name}</Text>
-      <Text as='span'> (админ)</Text>
-    </Link>
+  return (
+    <Grid mt={2}>
+      <AccessBand band={newBand} uid='new' />
+      {Object.keys(access).map(key =>
+        <AccessBand key={key} band={access[key]} uid={key} user={user} />
+      )}
+    </Grid>
+  )
+}
+const AccessBand = ({band, uid, user}) => {
+  const navigate = useNavigate()
+  const right = user && band.users[user.uid] || band.users['all']
+  const access = {
+    view: right === 'user' || right === 'admin',
+    edit: right === 'admin',
+    request: right === 'request'
   }
-  </>
-)
+  const handleClick = () => {
+    if (access.view) return navigate(`/${uid}`)
+    if (access.request) {
+      return alert('Запрос на доступ отправлен')
+    }
+    if (confirm('У Вас нет доступа к данному проекту. Запросить доступ?')) {
+      
+    }
+  }
+  const handleClickAdmin = () => {
+    navigate(`/${uid}/admin`)
+  }
+  return (
+    <Flex mb={2}>
+      <Button 
+        rightIcon={access.view ? <UnlockIcon /> : <LockIcon />}
+        colorScheme={access.view ? 'teal' : null}
+        flex={1}
+        onClick={handleClick}
+      >
+        <Text textTransform='uppercase'>{band.name}</Text>
+      </Button>
+      {access.edit && 
+        <Button
+          rightIcon={<UnlockIcon />}
+          colorScheme='red'
+          ml={1}
+          onClick={handleClickAdmin}
+        >ADMIN</Button>
+      }
+    </Flex>
+  )
+}
 
 export default function Index() {
-  const [user, role] = useLoaderData()
+  const {user, access} = useLoaderData()
   return (
-    <Grid gap={2} alignContent='center'>
+    <Grid gap={2}>
       <Heading as='h1' textAlign='center'>BANDSTATS</Heading>
-      {user ?
-        <Grid justifyContent='center' justifyItems='center'>
-          <Text>{user.displayName || user.email}</Text>
-          <Text>Добро пожаловать!</Text>
-          {role &&
-            <Grid justifyItems='center'>
-              <Text mt={12} mb={2}>Доступные проекты:</Text>
-              {Object.keys(role.bands).map(key => 
-                <BandRole key={key} link={key} band={role.bands[key]} />
-              )}
-            </Grid>
-          }
-        </Grid>
-      :
-        <Flex justifyContent='center'>
-          <Link to='auth' as={RouterLink}>Вход</Link>
-          <Text ml={2} mr={2}>|</Text>
-          <Link to='registration' as={RouterLink}>Регистрация</Link>
-        </Flex>
-      }
+      <Auth user={user} />
+      <Access access={access} user={user}/>
     </Grid>
   )
 }
