@@ -34,19 +34,17 @@ const toastAccessRequest = (bandName) => {
   }
 }
 const Auth = ({user}) => {
-  return (
+  return user ?
+    <Grid justifyItems='center' mb={5}>
+      <Text>{user.displayName}</Text>
+      <Text>{user.email}</Text>
+    </Grid>
+    :
     <Flex justifyContent='center' mb={5}>
-      {user ? 
-        <Text>{user.displayName || user.email}</Text>
-        :
-        <>
-        <Link to='auth' as={RouterLink}>Вход</Link>
-        <Text ml={2} mr={2}>|</Text>
-        <Link to='registration' as={RouterLink}>Регистрация</Link>
-        </>
-      }
+      <Link to='auth' as={RouterLink}>Вход</Link>
+      <Text ml={2} mr={2}>|</Text>
+      <Link to='registration' as={RouterLink}>Регистрация</Link>
     </Flex>
-  )
 }
 const Access = ({access, user, toast}) => {
   const newBand = {

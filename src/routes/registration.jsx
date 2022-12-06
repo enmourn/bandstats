@@ -1,4 +1,8 @@
+import { useEffect, useState } from "react"
 import { useActionData, Form, redirect } from "react-router-dom"
+import { getDatabase, ref, update } from "firebase/database";
+import { firebaseErrorParse } from '../libs/functions'
+import { ViewOffIcon, ViewIcon } from '@chakra-ui/icons'
 import {
   getAuth,
   onAuthStateChanged,
@@ -7,9 +11,6 @@ import {
   sendEmailVerification,
   signOut
 } from "firebase/auth"
-import { useEffect, useState } from "react"
-import { firebaseErrorParse } from '../libs/functions'
-import { ViewOffIcon, ViewIcon } from '@chakra-ui/icons'
 import {
   Grid,
   FormControl,
@@ -29,6 +30,7 @@ export async function loader() {
 }
 
 export async function action({ request }) {
+  const db = getDatabase()
   const formData = await request.formData()
   const auth = getAuth()
   if (formData.get('password') !== formData.get('confirmation')) {
@@ -40,6 +42,10 @@ export async function action({ request }) {
   try {
     await createUser(auth, formData.get('email'), formData.get('password'))
     await updateProfile(auth.currentUser, {displayName: formData.get('name')})
+    await update(ref(db, `users/${auth.currentUser.uid}`), {
+      email: formData.get('email'),
+      name: formData.get('name')
+    })
     await sendEmailVerification(auth.currentUser)
     await signOut(auth)
     return redirect(`/auth?new=${formData.get('email')}`)

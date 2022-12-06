@@ -81,12 +81,12 @@ const router = createBrowserRouter([
             action: registrationAction
           },
           {
-            path: ':bandKey',
+            path: ':band',
             element: <Band />,
             loader: bandLoader
           },
           {
-            path: ':bandKey/admin',
+            path: ':band/admin',
             element: <Admin />,
             loader: adminLoader,
             action: adminAction

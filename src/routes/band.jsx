@@ -135,13 +135,14 @@ export async function loader({ params }) {
   const db = getDatabase()
   const error404 = new Response('', {status: 404, statusText: 'Not Found'})
   const error403 = new Response('', {status: 403, statusText: 'Forbidden'})
-  const band = await get(ref(db, `bands/${params.bandKey}`))
+  const uid = params.band
+  const band = await get(ref(db, `bands/${uid}`))
     .then(snapshot => snapshot?.val())
   if (!band) throw error404
   const user = await new Promise(resolve => 
     onAuthStateChanged(getAuth(), user => resolve(user)))
   if (!user) throw error404
-  const accessBand = await get(ref(db, `access/${params.bandKey}`))
+  const accessBand = await get(ref(db, `access/${uid}`))
     .then(snapshot => snapshot?.val())
   const right = accessBand?.users?.[user.uid]
   const access = right === 'user' || right == 'admin'
