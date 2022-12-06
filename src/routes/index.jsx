@@ -22,7 +22,7 @@ export async function loader() {
 
 const Auth = ({user}) => {
   return (
-    <Flex justifyContent='center'>
+    <Flex justifyContent='center' mb={5}>
       {user ? 
         <Text>{user.displayName || user.email}</Text>
         :
@@ -43,7 +43,7 @@ const Access = ({access, user}) => {
     }
   }
   return (
-    <Grid mt={2}>
+    <Grid mt={2} m='auto'>
       <AccessBand band={newBand} uid='new' />
       {Object.keys(access).map(key =>
         <AccessBand key={key} band={access[key]} uid={key} user={user} />
@@ -96,10 +96,10 @@ const AccessBand = ({band, uid, user}) => {
 export default function Index() {
   const {user, access} = useLoaderData()
   return (
-    <Grid gap={2}>
-      <Heading as='h1' textAlign='center'>BANDSTATS</Heading>
-      <Auth user={user} />
-      <Access access={access} user={user}/>
-    </Grid>
+    <>
+    <Heading as='h1' textAlign='center' mb={3}>BANDSTATS</Heading>
+    <Auth user={user} />
+    <Access access={access} user={user}/>
+    </>
   )
 }

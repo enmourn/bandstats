@@ -17,6 +17,7 @@ import {
   InputRightElement,
   Button,
   useToast,
+  Heading,
 } from '@chakra-ui/react'
 
 export async function loader() {
@@ -73,27 +74,28 @@ export default function Auth() {
     })
   }, [actionData])
   return (
-    <Grid alignContent='center' justifyContent='center'>
-      <Form method='post'>
-        <Grid gap={2}>
-          <FormControl>
-            <FormLabel>Email:</FormLabel>
-            <Input name='email' defaultValue={email} required/>
-          </FormControl>
-          <FormControl>
-            <FormLabel>Пароль:</FormLabel>
-            <InputGroup>
-              <Input type={pass ? 'password' : 'text'} name='password' required/>
-              <InputRightElement>
-                <Button onClick={e => {setPass(!pass)}} variant='unstyled'>
-                  {pass ? <ViewIcon color='gray.200'/> : <ViewOffIcon color='gray.200'/>}
-                </Button>
-              </InputRightElement>
-            </InputGroup>
-          </FormControl>
-          <Button type='submit' mt={6}>Вход</Button>
-        </Grid>
-      </Form>
-    </Grid>
+    <>
+    <Heading as='h1' textAlign='center' mb={3}>ВХОД</Heading>
+    <Form method='post' style={{margin: 'auto'}}>
+      <Grid gap={2}>
+        <FormControl>
+          <FormLabel>Email:</FormLabel>
+          <Input name='email' defaultValue={email} required/>
+        </FormControl>
+        <FormControl>
+          <FormLabel>Пароль:</FormLabel>
+          <InputGroup>
+            <Input type={pass ? 'password' : 'text'} name='password' required/>
+            <InputRightElement>
+              <Button onClick={e => {setPass(!pass)}} variant='unstyled'>
+                {pass ? <ViewIcon color='gray.200'/> : <ViewOffIcon color='gray.200'/>}
+              </Button>
+            </InputRightElement>
+          </InputGroup>
+        </FormControl>
+        <Button type='submit' mt={6} colorScheme='teal'>Вход</Button>
+      </Grid>
+    </Form>
+    </>
   )
 }

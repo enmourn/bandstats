@@ -18,6 +18,7 @@ import Band, {
 import Admin, {
   loader as adminLoader,
   action as adminAction } from './routes/admin'
+import Error from './routes/error.jsx'
 
 const firebaseConfig = {
   apiKey: "AIzaSyC2AO9CBep5oe7pz-eJYLaX-iFXjE9aWZ0",
@@ -56,32 +57,37 @@ const router = createBrowserRouter([
     element: <Root />,
     children: [
       {
-        index: true,
-        element: <Index />,
-        loader: indexLoader
-      },
-      {
-        path: 'auth',
-        element: <Auth />,
-        loader: authLoader,
-        action: authAction
-      },
-      {
-        path: 'registration',
-        element: <Registration />,
-        loader: registrationLoader,
-        action: registrationAction
-      },
-      {
-        path: ':bandKey',
-        element: <Band />,
-        loader: bandLoader
-      },
-      {
-        path: ':bandKey/admin',
-        element: <Admin />,
-        loader: adminLoader,
-        action: adminAction
+        errorElement: <Error />,
+        children: [
+          {
+            index: true,
+            element: <Index />,
+            loader: indexLoader
+          },
+          {
+            path: 'auth',
+            element: <Auth />,
+            loader: authLoader,
+            action: authAction
+          },
+          {
+            path: 'registration',
+            element: <Registration />,
+            loader: registrationLoader,
+            action: registrationAction
+          },
+          {
+            path: ':bandKey',
+            element: <Band />,
+            loader: bandLoader
+          },
+          {
+            path: ':bandKey/admin',
+            element: <Admin />,
+            loader: adminLoader,
+            action: adminAction
+          }
+        ]
       }
     ]
   },

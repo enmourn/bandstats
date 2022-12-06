@@ -337,8 +337,10 @@ export default function Band() {
   const band = useLoaderData()
   return (
     <>
-    <Heading as='h1' textTransform='uppercase' mb={3}>{band.name}</Heading>
-    <Grid alignContent='start' gap={6}>
+    <Heading as='h1' textAlign='center' mb={3} textTransform='uppercase'>
+      {band.name}
+    </Heading>
+    <Grid gap={6} alignContent='start'>
       <Activity band={band} />
       <Musicians band={band} />
       <Events band={band} />

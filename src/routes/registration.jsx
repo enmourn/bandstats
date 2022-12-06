@@ -19,6 +19,7 @@ import {
   InputRightElement,
   Button,
   useToast,
+  Heading,
 } from '@chakra-ui/react'
 
 export async function loader() {
@@ -64,42 +65,43 @@ export default function Registration() {
     })
   }, [actionData])
   return (
-    <Grid alignContent='center' justifyContent='center'>
-      <Form method='post'>
-        <Grid gap={2}>
-          <FormControl>
-            <FormLabel>Email:</FormLabel>
-            <Input name='email' required/>
-          </FormControl>
-          <FormControl>
-            <FormLabel>Имя:</FormLabel>
-            <Input name='name' required/>
-          </FormControl>
-          <FormControl>
-            <FormLabel>Пароль:</FormLabel>
-            <InputGroup>
-              <Input type={pass[0] ? 'password' : 'text'} name='password' required/>
-              <InputRightElement>
-                <Button onClick={e => {setPass([!pass[0], pass[1]])}} variant='unstyled'>
-                  {pass[0] ? <ViewIcon color='gray.200'/> : <ViewOffIcon color='gray.200'/>}
-                </Button>
-              </InputRightElement>
-            </InputGroup>
-          </FormControl>
-          <FormControl>
-            <FormLabel>Повтор пароля:</FormLabel>
-            <InputGroup>
-              <Input type={pass[1] ? 'password' : 'text'} name='confirmation' required/>
-              <InputRightElement>
-                <Button onClick={e => {setPass([pass[0], !pass[1]])}} variant='unstyled'>
-                  {pass[1] ? <ViewIcon color='gray.200'/> : <ViewOffIcon color='gray.200'/>}
-                </Button>
-              </InputRightElement>
-            </InputGroup>
-          </FormControl>
-          <Button type='submit' mt={6}>Регистрация</Button>
-        </Grid>
-      </Form>
-    </Grid>
+    <>
+    <Heading as='h1' textAlign='center' mb={3}>РЕГИСТРАЦИЯ</Heading>
+    <Form method='post' style={{margin: 'auto'}}>
+      <Grid gap={2}>
+        <FormControl>
+          <FormLabel>Email:</FormLabel>
+          <Input name='email' required/>
+        </FormControl>
+        <FormControl>
+          <FormLabel>Имя:</FormLabel>
+          <Input name='name' required/>
+        </FormControl>
+        <FormControl>
+          <FormLabel>Пароль:</FormLabel>
+          <InputGroup>
+            <Input type={pass[0] ? 'password' : 'text'} name='password' required/>
+            <InputRightElement>
+              <Button onClick={e => {setPass([!pass[0], pass[1]])}} variant='unstyled'>
+                {pass[0] ? <ViewIcon color='gray.200'/> : <ViewOffIcon color='gray.200'/>}
+              </Button>
+            </InputRightElement>
+          </InputGroup>
+        </FormControl>
+        <FormControl>
+          <FormLabel>Повтор пароля:</FormLabel>
+          <InputGroup>
+            <Input type={pass[1] ? 'password' : 'text'} name='confirmation' required/>
+            <InputRightElement>
+              <Button onClick={e => {setPass([pass[0], !pass[1]])}} variant='unstyled'>
+                {pass[1] ? <ViewIcon color='gray.200'/> : <ViewOffIcon color='gray.200'/>}
+              </Button>
+            </InputRightElement>
+          </InputGroup>
+        </FormControl>
+        <Button type='submit' mt={6} colorScheme='teal'>Регистрация</Button>
+      </Grid>
+    </Form>
+    </>
   )
 }

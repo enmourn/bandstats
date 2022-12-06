@@ -4,7 +4,7 @@ import { getDatabase, ref, get, set } from "firebase/database";
 import { useLoaderData } from "react-router-dom";
 import CalendarEvents from '../components/CalendarEvents'
 import FormEvent from '../components/FormEvent'
-import { Grid } from '@chakra-ui/react'
+import { Grid, Heading } from '@chakra-ui/react'
 import { useEffect } from 'react';
 
 export async function loader({ params }) {
@@ -60,9 +60,14 @@ export default function Admin() {
     setEvent(null)
   }, [band])
   return (
-    <Grid gap={10}>
-      <CalendarEvents events={band.events} click={calendarClick} />
-      {event && <FormEvent event={event} musicians={band.musicians}/>}
-    </Grid>
+    <>
+      <Heading as='h1' textAlign='center' mb={3} textTransform='uppercase'>
+        {band.name}
+      </Heading>
+      <Grid gap={6} m='auto'>
+        <CalendarEvents events={band.events} click={calendarClick} />
+        {event && <FormEvent event={event} musicians={band.musicians}/>}
+      </Grid>
+    </>
   )
 }
