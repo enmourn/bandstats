@@ -3,6 +3,7 @@ import { Grid, Heading, Text } from '@chakra-ui/react'
 
 export default function ErrorPage() {
   const error = useRouteError();
+  console.log(error)
   return (
     <>
       <Heading as='h1' textAlign='center' mb={3}>{error.status}</Heading>

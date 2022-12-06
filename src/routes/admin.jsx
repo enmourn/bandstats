@@ -1,11 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { getAuth, onAuthStateChanged } from "firebase/auth"
 import { getDatabase, ref, get, set } from "firebase/database";
 import { useLoaderData } from "react-router-dom";
 import CalendarEvents from '../components/CalendarEvents'
 import FormEvent from '../components/FormEvent'
 import { Grid, Heading } from '@chakra-ui/react'
-import { useEffect } from 'react';
 
 export async function loader({ params }) {
   const db = getDatabase()

@@ -5,19 +5,22 @@ import { initializeApp } from "firebase/app"
 import { ChakraProvider, extendTheme } from '@chakra-ui/react'
 
 import Root from './routes/root'
-import Index, {
-  loader as indexLoader } from './routes/index'
+import { Index, indexLoader, indexAction } from './routes/index'
 import Auth, {
   loader as authLoader,
-  action as authAction } from './routes/auth'
+  action as authAction
+} from './routes/auth'
 import Registration,  {
   loader as registrationLoader,
-  action as registrationAction } from './routes/registration'
+  action as registrationAction
+} from './routes/registration'
 import Band, {
-  loader as bandLoader } from './routes/band'
+  loader as bandLoader
+} from './routes/band'
 import Admin, {
   loader as adminLoader,
-  action as adminAction } from './routes/admin'
+  action as adminAction
+} from './routes/admin'
 import Error from './routes/error.jsx'
 
 const firebaseConfig = {
@@ -62,7 +65,8 @@ const router = createBrowserRouter([
           {
             index: true,
             element: <Index />,
-            loader: indexLoader
+            loader: indexLoader,
+            action: indexAction
           },
           {
             path: 'auth',
