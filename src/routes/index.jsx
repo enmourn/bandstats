@@ -58,11 +58,12 @@ const Access = ({access, user, toast}) => {
       <AccessBand band={newBand} uid='new' />
       {Object.keys(access).map(key =>
         <AccessBand
-        key={key}
-        band={access[key]}
-        uid={key}
-        user={user}
-        toast={toast}/>
+          key={key}
+          band={access[key]}
+          uid={key}
+          user={user}
+          toast={toast}
+        />
       )}
     </Grid>
   )

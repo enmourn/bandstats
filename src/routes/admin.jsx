@@ -72,14 +72,17 @@ export async function loader({ params }) {
   const band = await get(ref(db, `bands/${bandUid}`))
     .then(snapshot => snapshot?.val())
   if (!band) throw error404
-  const user = await new Promise(resolve => 
-    onAuthStateChanged(getAuth(), user => resolve(user)))
-  if (!user) throw error404
   const accessBand = await get(ref(db, `access/${bandUid}`))
     .then(snapshot => snapshot?.val())
-  const right = accessBand?.users?.[user.uid] || accessBand?.users?.['all']
-  const access = right == 'admin'
-  if (!access) throw error403
+  const user = await new Promise(resolve => 
+    onAuthStateChanged(getAuth(), user => resolve(user)))
+  const right = user && accessBand.users[user.uid] || accessBand.users['all']
+  const access = {
+    view: right === 'user' || right === 'admin',
+    edit: right === 'admin',
+    request: right === 'request'
+  }
+  if (!access.edit) throw error403
   const accessRequests = await getAccessRequests(accessBand)
   return {bandUid, band, accessRequests}
 }

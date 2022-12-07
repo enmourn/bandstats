@@ -1,6 +1,6 @@
-import { Grid, Flex, Heading, Box, Text, GridItem } from "@chakra-ui/react";
+import { Grid, Flex, Heading, Box, Text } from "@chakra-ui/react"
 import { getAuth, onAuthStateChanged } from "firebase/auth"
-import { getDatabase, ref, get, set } from "firebase/database"
+import { getDatabase, ref, get } from "firebase/database"
 import { useLoaderData } from "react-router-dom"
 import { StarIcon } from '@chakra-ui/icons'
 import {
@@ -16,7 +16,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { Bar, Pie } from 'react-chartjs-2';
+import { Bar, Pie } from 'react-chartjs-2'
 
 ChartJS.register(
   CategoryScale,
@@ -31,71 +31,97 @@ ChartJS.register(
   Legend
 )
 const getExtendBand = dbBand => {
-  let band = {...dbBand}
-  for (let date in band.events) {
-    let event = band.events[date]
-    event.start = new Date(`${date}T${event.start}`)
-    event.end = new Date(`${date}T${event.end}`)
-    event.timer = (event.end - event.start) / 1000 / 60
-    for (let key in event.musicians) {
-      let eMus = event.musicians[key]
-      let bMus = band.musicians[key]
-      eMus.start = new Date(`${date}T${eMus.start}`)
-      eMus.end = new Date(`${date}T${eMus.end}`)
-      eMus.timer = (eMus.end - eMus.start) / 1000 / 60
-      eMus.efficiency = eMus.timer / event.timer
-      bMus.efficiencySum = (bMus.efficiencySum || 0) + eMus.efficiency
-      bMus.eventCount = (bMus.eventCount || 0) + 1
-      event.efficiencySum = (event.efficiencySum || 0) + eMus.efficiency
-    }
+  const extendEvents = () => {
+    if (!band.events) return
     let bMusCount = Object.keys(band.musicians).length
-    event.efficiencyLost = bMusCount - event.efficiencySum
-    event.efficiency = event.efficiencySum / bMusCount
-  }
-  let colors = [
-    '#f19066', '#f5cd79', '#546de5', '#574b90', '#c44569',
-    '#f78fb3', '#3dc1d3', '#e66767', '#303952', '#e15f41'
-  ]
-  for (let key in band.musicians) {
-    let bMus = band.musicians[key]
-    bMus.efficiencyAvg = bMus.efficiencySum / bMus.eventCount
-    bMus.activityAvg = bMus.efficiencySum / Object.keys(band.events).length
-    bMus.color = colors.shift() || '#e15f41'
-  }
-  band.months = {}
-  for (
-    let dt = new Date(Object.keys(band.events)[0].slice(0, 7) + '-01T00:00');
-    dt <= new Date;
-    dt.setMonth(dt.getMonth() + 1)
-  ) {
-    let dtISO = dt.getFullYear() + '-' + ('0' + (dt.getMonth() + 1)).slice(-2)
-    band.months[dtISO] = {
-      name: dt.toLocaleString('default', {month: 'short', year: 'numeric'}),
-      musicians: Object.keys(band.musicians).reduce((accum, key) => {
-        accum[key] = {
-          efficiencySum: 0
-        }
-        return accum
-      }, {})
-    }
-    let month = band.months[dtISO]
     for (let date in band.events) {
       let event = band.events[date]
-      if (dtISO == date.slice(0, 7)) {
-        for(let key in event.musicians) {
-          let musician = event.musicians[key]
-          let monthMusician = month.musicians[key]
-          monthMusician.efficiencySum += musician.efficiency
+      event.start = new Date(`${date}T${event.start}`)
+      event.end = new Date(`${date}T${event.end}`)
+      event.timer = (event.end - event.start) / 1000 / 60
+      event.efficiencySum = 0
+      event.efficiencyLost = bMusCount
+      event.efficiency = 0
+      if (!event.musicians) continue
+      for (let key in event.musicians) {
+        let eMus = event.musicians[key]
+        eMus.start = new Date(`${date}T${eMus.start}`)
+        eMus.end = new Date(`${date}T${eMus.end}`)
+        eMus.timer = (eMus.end - eMus.start) / 1000 / 60
+        eMus.efficiency = eMus.timer / event.timer
+        event.efficiencySum += eMus.efficiency
+      }
+      event.efficiencyLost = bMusCount - event.efficiencySum
+      event.efficiency = event.efficiencySum / bMusCount
+    }
+  }
+  const extendMusicians = () => {
+    let colors = [
+      '#f19066', '#f5cd79', '#546de5', '#574b90', '#c44569',
+      '#f78fb3', '#3dc1d3', '#e66767', '#303952', '#e15f41'
+    ]
+    for (let musicianKey in band.musicians) {
+      let bMus = band.musicians[musicianKey]
+      bMus.efficiencySum = 0
+      bMus.eventCount = 0
+      bMus.efficiencyAvg = 0
+      bMus.activityAvg = 0
+      bMus.color = colors.shift() || '#e15f41'
+      if (!band.events) continue
+      for (let eventKey in band.events) {
+        let event = band.events[eventKey]
+        if (musicianKey in event.musicians) {
+          let eMus = event.musicians[musicianKey]
+          bMus.efficiencySum += eMus.efficiency
+          bMus.eventCount ++
         }
       }
+      bMus.efficiencyAvg = bMus.efficiencySum / bMus.eventCount
+      bMus.activityAvg = bMus.efficiencySum / Object.keys(band.events).length
     }
-    month.musiciansEfficiencySumAvg = 0
-    for (let key in month.musicians) {
-      let monthMusician = month.musicians[key]
-      month.musiciansEfficiencySumAvg += monthMusician.efficiencySum
-    }
-    month.musiciansEfficiencySumAvg /= Object.keys(month.musicians).length
   }
+  const extendMonths = () => {
+    band.months = {}
+    let dt = band.events ?
+      new Date(Object.keys(band.events)[0].slice(0, 7) + '-01T00:00') :
+      new Date
+    for (dt; dt <= new Date; dt.setMonth(dt.getMonth() + 1)) {
+      let dtISO = dt.getFullYear() + '-'
+      dtISO += ('0' + (dt.getMonth() + 1)).slice(-2)   
+      band.months[dtISO] = {
+        name: dt.toLocaleString('default', {month: 'short', year: 'numeric'}),
+        musicians: Object.keys(band.musicians).reduce((accum, key) => {
+          accum[key] = {
+            efficiencySum: 0
+          }
+          return accum
+        }, {})
+      }
+      let month = band.months[dtISO]
+      month.musiciansEfficiencySumAvg = 0
+      if (!band.events) continue
+      for (let date in band.events) {
+        let event = band.events[date]
+        if (dtISO == date.slice(0, 7)) {
+          for(let key in event.musicians) {
+            let musician = event.musicians[key]
+            let monthMusician = month.musicians[key]
+            monthMusician.efficiencySum += musician.efficiency
+          }
+        }
+      }
+      for (let key in month.musicians) {
+        let monthMusician = month.musicians[key]
+        month.musiciansEfficiencySumAvg += monthMusician.efficiencySum
+      }
+      month.musiciansEfficiencySumAvg /= Object.keys(month.musicians).length
+    }
+  }
+  let band = {...dbBand}
+  band.eventCount = band.events ? Object.keys(band.events).length : 0
+  extendEvents()
+  extendMusicians()
+  extendMonths()
   return band
 }
 const getBandActivity = band => {
@@ -137,18 +163,21 @@ export async function loader({ params }) {
   const db = getDatabase()
   const error404 = new Response('', {status: 404, statusText: 'Not Found'})
   const error403 = new Response('', {status: 403, statusText: 'Forbidden'})
-  const uid = params.band
-  const band = await get(ref(db, `bands/${uid}`))
+  const bandUid = params.band
+  const band = await get(ref(db, `bands/${bandUid}`))
     .then(snapshot => snapshot?.val())
   if (!band) throw error404
+  const accessBand = await get(ref(db, `access/${bandUid}`))
+    .then(snapshot => snapshot?.val())
   const user = await new Promise(resolve => 
     onAuthStateChanged(getAuth(), user => resolve(user)))
-  if (!user) throw error404
-  const accessBand = await get(ref(db, `access/${uid}`))
-    .then(snapshot => snapshot?.val())
-  const right = accessBand?.users?.[user.uid] || accessBand?.users?.['all']
-  const access = right === 'user' || right == 'admin'
-  if (!access) throw error403
+  const right = user && accessBand.users[user.uid] || accessBand.users['all']
+  const access = {
+    view: right === 'user' || right === 'admin',
+    edit: right === 'admin',
+    request: right === 'request'
+  }
+  if (!access.view) throw error403
   return getExtendBand(band)
 }
 
@@ -169,7 +198,7 @@ const Activity = ({band}) => {
           borderRadius: '24px',
         },
       }}>
-        <Box w={bandActivity.labels.length * 100} mb={2}>
+        <Box w='100%' minW={bandActivity.labels.length * 100} maxH={250} mb={2}>
           <Bar data={bandActivity} options={{
             plugins: {
               legend: {
@@ -192,13 +221,12 @@ const Activity = ({band}) => {
 }
 const Musician = ({band, item}) => {
   const musician = band.musicians[item]
-  const eventCount = Object.keys(band.events).length
   return (
     <>
     <Box mr={2}>
       <Heading as='h3' size='sm'>{musician.name}</Heading>
       <Box fontSize={12} bg='#eee' pl={4}>
-        <Text>Репетиции: {musician.eventCount} из {eventCount}</Text>
+        <Text>Репетиции: {musician.eventCount} из {band.eventCount}</Text>
         <Text>Активность: {parseInt(musician.activityAvg * 100)}%</Text>
       </Box>
     </Box>
@@ -331,7 +359,7 @@ const Events = ({band}) => (
   <Grid>
     <Heading as='h2' size='md' mb={3}>Репетиции</Heading>
     <Grid templateColumns='140px 1fr'>
-      {Object.keys(band.events).reverse().map(key => 
+      {band.events && Object.keys(band.events).reverse().map(key => 
         <Event key={key} band={band} item={key} />
       )}
     </Grid>
