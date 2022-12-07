@@ -171,7 +171,7 @@ export async function loader({ params }) {
     .then(snapshot => snapshot?.val())
   const user = await new Promise(resolve => 
     onAuthStateChanged(getAuth(), user => resolve(user)))
-  const right = user && accessBand.users[user.uid] || accessBand.users['all']
+  const right = user && accessBand[user.uid] || accessBand['all']
   const access = {
     view: right === 'user' || right === 'admin',
     edit: right === 'admin',

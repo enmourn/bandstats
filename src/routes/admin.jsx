@@ -14,13 +14,12 @@ import {
 const getAccessRequests = async (accessBand) => {
   const db = getDatabase()
   let accessRequests = []
-  for (let key in accessBand.users) {
-    if (accessBand.users[key] == 'request') {
-      let user = await get(ref(db, `users/${key}`)).then(res => res?.val())
-      if (user) {
-        user.uid = key
-        accessRequests.push(user)
-      }
+  for (let userUid in accessBand) {
+    if (accessBand[userUid] == 'request') {
+      let user = await get(ref(db, `users/${userUid}`))
+        .then(res => res?.val())
+      user.uid = userUid
+      accessRequests.push(user)
     }
   }
   return accessRequests
@@ -76,7 +75,7 @@ export async function loader({ params }) {
     .then(snapshot => snapshot?.val())
   const user = await new Promise(resolve => 
     onAuthStateChanged(getAuth(), user => resolve(user)))
-  const right = user && accessBand.users[user.uid] || accessBand.users['all']
+  const right = user && accessBand[user.uid] || accessBand['all']
   const access = {
     view: right === 'user' || right === 'admin',
     edit: right === 'admin',
@@ -92,7 +91,7 @@ export async function action({ request }) {
   if (formData.get('action') == 'allowAccess') {
     let band = formData.get('band')
     let user = formData.get('user')
-    update(ref(db, `access/${band}/users`), {[user]: 'user'})
+    update(ref(db, `access/${band}`), {[user]: 'user'})
     return
   }
   if (formData.get('action') == 'updateEvent') {
