@@ -146,7 +146,7 @@ export async function loader({ params }) {
   if (!user) throw error404
   const accessBand = await get(ref(db, `access/${uid}`))
     .then(snapshot => snapshot?.val())
-  const right = accessBand?.users?.[user.uid]
+  const right = accessBand?.users?.[user.uid] || accessBand?.users?.['all']
   const access = right === 'user' || right == 'admin'
   if (!access) throw error403
   return getExtendBand(band)

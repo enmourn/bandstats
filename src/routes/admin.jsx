@@ -68,20 +68,20 @@ export async function loader({ params }) {
   const db = getDatabase()
   const error404 = new Response('', {status: 404, statusText: 'Not Found'})
   const error403 = new Response('', {status: 403, statusText: 'Forbidden'})
-  const uid = params.band
-  const band = await get(ref(db, `bands/${uid}`))
+  const bandUid = params.band
+  const band = await get(ref(db, `bands/${bandUid}`))
     .then(snapshot => snapshot?.val())
   if (!band) throw error404
   const user = await new Promise(resolve => 
     onAuthStateChanged(getAuth(), user => resolve(user)))
   if (!user) throw error404
-  const accessBand = await get(ref(db, `access/${uid}`))
+  const accessBand = await get(ref(db, `access/${bandUid}`))
     .then(snapshot => snapshot?.val())
-  const right = accessBand?.users?.[user.uid]
+  const right = accessBand?.users?.[user.uid] || accessBand?.users?.['all']
   const access = right == 'admin'
   if (!access) throw error403
   const accessRequests = await getAccessRequests(accessBand)
-  return {uid, band, accessRequests}
+  return {bandUid, band, accessRequests}
 }
 export async function action({ request }) {
   const db = getDatabase()
@@ -92,28 +92,34 @@ export async function action({ request }) {
     update(ref(db, `access/${band}/users`), {[user]: 'user'})
     return
   }
-  const date = formData.get('date')
-  const data = formData.get('delete') ? null : {
-    start: formData.get('start'),
-    end: formData.get('end'),
-    comment: formData.get('comment'),
-    musicians: formData.getAll('musician').reduce((accum, current) => {
-      accum[current] = {
-        start: formData.get(`${current}-start`),
-        end: formData.get(`${current}-end`)
-      }
-      return accum
-    }, {})
+  if (formData.get('action') == 'updateEvent') {
+    let date = formData.get('date')
+    let bandUid = formData.get('bandUid')
+    let data = {
+      start: formData.get('start'),
+      end: formData.get('end'),
+      comment: formData.get('comment'),
+      musicians: formData.getAll('musician').reduce((accum, current) => {
+        accum[current] = {
+          start: formData.get(`${current}-start`),
+          end: formData.get(`${current}-end`)
+        }
+        return accum
+      }, {})
+    }
+    update(ref(db, `bands/${bandUid}/events/${date}`), data)
+    return
   }
-  set(ref(getDatabase(), `bands/digmenograve/events/${date}`), data)
-  .then(() => {
-  }).catch((error) => {
-    console.log(error)
-  });
+  if (formData.get('action') == 'deleteEvent') {
+    let date = formData.get('date')
+    let bandUid = formData.get('bandUid')
+    set(ref(db, `bands/${bandUid}/events/${date}`), null)
+    return
+  }
 }
 
 export default function Admin() {
-  const {uid, band, accessRequests} = useLoaderData()
+  const {bandUid, band, accessRequests} = useLoaderData()
   const [event, setEvent] = useState()
   const calendarClick = date => {
     let dateISO = date.getFullYear() + '-'
@@ -129,9 +135,15 @@ export default function Admin() {
         {band.name}
       </Heading>
       <Grid gap={6} m='auto'>
-        <AccessRequests requests={accessRequests} band={uid}/>
+        <AccessRequests requests={accessRequests} band={bandUid}/>
         <CalendarEvents events={band.events} click={calendarClick} />
-        {event && <FormEvent event={event} musicians={band.musicians}/>}
+        {event &&
+          <FormEvent
+            event={event}
+            musicians={band.musicians}
+            bandUid={bandUid}
+          />
+        }
       </Grid>
     </>
   )

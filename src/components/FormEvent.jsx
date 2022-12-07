@@ -53,7 +53,7 @@ const Musician = ({musician}) => {
   )
 }
 
-export default function FormEvent({event, musicians}) {
+export default function FormEvent({event, musicians, bandUid}) {
   const submit = useSubmit()
   const checkboxes = Object.keys(musicians).map(key => {
     let musician = {...musicians[key], key: key}
@@ -66,14 +66,15 @@ export default function FormEvent({event, musicians}) {
     day: 'numeric',
     weekday: 'long',
   })
-  const handleDelete = () => {
-    let formData = new FormData
-    formData.append('delete', true)
-    formData.append('date', event.date)
+  const handleDelete = (e) => {
+    let formData = new FormData(e.target.form)
+    formData.set('action', 'deleteEvent')
     submit(formData, {method: 'post'})
   }
   return (
     <Form key={event.date} method='post'>
+      <VisuallyHiddenInput name='action' defaultValue='updateEvent' />
+      <VisuallyHiddenInput name='bandUid' defaultValue={bandUid} />
       <VisuallyHiddenInput name='date' defaultValue={event.date} />
       <Text
         css={{"&:first-letter": {textTransform: "uppercase"}}}
@@ -131,16 +132,13 @@ export default function FormEvent({event, musicians}) {
           </FormControl>
         </GridItem>
         <GridItem colSpan={2}>
-          <Button
-            type='submit'
-            colorScheme='teal'
-          >Сохранить</Button>
+          <Button type='submit' colorScheme='teal'>
+            Сохранить
+          </Button>
           {event.start &&
-            <Button
-              onClick={handleDelete}
-              colorScheme='red'
-              ml={2}
-            >Удалить</Button>
+            <Button onClick={handleDelete} colorScheme='red' ml={2}>
+              Удалить
+            </Button>
           }
         </GridItem>
       </Grid>  
