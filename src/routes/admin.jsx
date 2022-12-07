@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { getAuth, onAuthStateChanged } from "firebase/auth"
-import { getDatabase, ref, get, set, update } from "firebase/database";
+import { getDatabase, ref, get, set, update, onValue, off } from "firebase/database";
 import { useLoaderData, Form } from "react-router-dom";
 import CalendarEvents from '../components/CalendarEvents'
 import FormEvent from '../components/FormEvent'
@@ -11,26 +11,34 @@ import {
   VisuallyHiddenInput
 } from '@chakra-ui/react'
 
-const getAccessRequests = async (accessBand) => {
-  const db = getDatabase()
-  let accessRequests = []
-  for (let userUid in accessBand) {
-    if (accessBand[userUid] == 'request') {
-      let user = await get(ref(db, `users/${userUid}`))
-        .then(res => res?.val())
-      user.uid = userUid
-      accessRequests.push(user)
-    }
-  }
-  return accessRequests
-}
-
-const AccessRequests = ({requests, band}) => {
-  const submit = e => {
+const AccessRequests = ({bandUid}) => {
+  const [requests, setRequests] = useState([])
+  const handleSubmit = e => {
     if (!confirm('Вы уверены, что хотите предоставить доступ?')) {
       e.preventDefault()
     }
   }
+  useEffect(() => {
+    const db = getDatabase()
+    const accessBandRef = ref(db, `access/${bandUid}`)
+    onValue(accessBandRef, async (snapshot) => {
+      const accessBand = snapshot.val()
+      let requests = []
+      for (let userUid in accessBand) {
+        if (accessBand[userUid] == 'request') {
+          let user = await get(ref(db, `users/${userUid}`))
+            .then(snapshot => snapshot.val())
+          user.uid = userUid
+          user.bandUid = bandUid
+          requests.push(user)
+        }
+      }
+      setRequests(requests)
+    })
+    return () => {
+      off(accessBandRef)
+    }
+  }, [])
   return (
     <>
       {requests.map(user => 
@@ -51,9 +59,9 @@ const AccessRequests = ({requests, band}) => {
             <Text>Пользователь: {user.name}</Text>  
             <Text>Email: {user.email}</Text>
           </Grid>
-          <Form method='post' onSubmit={submit}>
+          <Form method='post' onSubmit={handleSubmit}>
             <VisuallyHiddenInput name='action' defaultValue='allowAccess' />
-            <VisuallyHiddenInput name='band' defaultValue={band} />
+            <VisuallyHiddenInput name='band' defaultValue={user.bandUid} />
             <VisuallyHiddenInput name='user' defaultValue={user.uid} />
             <Button type='submit' colorScheme='red'>OK</Button>
           </Form>
@@ -82,8 +90,7 @@ export async function loader({ params }) {
     request: right === 'request'
   }
   if (!access.edit) throw error403
-  const accessRequests = await getAccessRequests(accessBand)
-  return {bandUid, band, accessRequests}
+  return {bandUid, band}
 }
 export async function action({ request }) {
   const db = getDatabase()
@@ -119,9 +126,8 @@ export async function action({ request }) {
     return
   }
 }
-
 export default function Admin() {
-  const {bandUid, band, accessRequests} = useLoaderData()
+  const {bandUid, band} = useLoaderData()
   const [event, setEvent] = useState()
   const calendarClick = date => {
     let dateISO = date.getFullYear() + '-'
@@ -137,7 +143,7 @@ export default function Admin() {
         {band.name}
       </Heading>
       <Grid gap={6} m='auto'>
-        <AccessRequests requests={accessRequests} band={bandUid}/>
+        <AccessRequests bandUid={bandUid}/>
         <CalendarEvents events={band.events} click={calendarClick} />
         {event &&
           <FormEvent
