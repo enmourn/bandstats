@@ -67,9 +67,11 @@ export default function FormEvent({event, musicians, bandUid}) {
     weekday: 'long',
   })
   const handleDelete = (e) => {
-    let formData = new FormData(e.target.form)
-    formData.set('action', 'deleteEvent')
-    submit(formData, {method: 'post'})
+    if (confirm('Удалить статистику репетиции?')) {
+      let formData = new FormData(e.target.form)
+      formData.set('action', 'deleteEvent')
+      submit(formData, {method: 'post'})
+    }
   }
   return (
     <Form key={event.date} method='post'>
