@@ -101,9 +101,7 @@ const AccessBand = ({accessBand, user, toast}) => {
     if (access.view) return navigate(`/${accessBand.uid}`)
     if (access.request) return toast(toastAccessRequest(accessBand.name))
     if (!user) return toast(toastAuthError(accessBand.name))
-    if (await isConfirmed(
-      `У Вас нет доступа к данному проекту. Запросить доступ?`
-    )) {
+    if (await isConfirmed('У вас нет доступа. Запросить доступ к проекту?')) {
       let formData = new FormData()
       formData.append('bandUid', accessBand.uid)
       formData.append('bandName', accessBand.name)

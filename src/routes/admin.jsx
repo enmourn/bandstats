@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getAuth, onAuthStateChanged } from "firebase/auth"
 import { getDatabase, ref, get, set, update, onValue, off } from "firebase/database";
-import { useLoaderData, Form } from "react-router-dom";
+import { useLoaderData, useSubmit, Form } from "react-router-dom";
 import { useConfirm } from '../components/useConfirm'
 import CalendarEvents from '../components/CalendarEvents'
 import FormEvent from '../components/FormEvent'
@@ -15,9 +15,12 @@ import {
 const AccessRequests = ({bandUid}) => {
   const [requests, setRequests] = useState([])
   const {isConfirmed} = useConfirm()
+  const submit = useSubmit()
   const handleSubmit = async (e) => {
-    if (! await isConfirmed('Вы уверены, что хотите предоставить доступ?')) {
-      e.preventDefault()
+    e.preventDefault()
+    if (await isConfirmed('Вы уверены, что хотите предоставить доступ?')) {
+      let formData = new FormData(e.target)
+      submit(formData, {method: 'post'})
     }
   }
   useEffect(() => {

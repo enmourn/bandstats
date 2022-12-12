@@ -12,7 +12,8 @@ import {
   GridItem,
   Checkbox,
   Button,
-  VisuallyHiddenInput
+  VisuallyHiddenInput,
+  useToast
 } from '@chakra-ui/react'
 
 const Musician = ({musician}) => {
@@ -56,6 +57,7 @@ const Musician = ({musician}) => {
 
 export default function FormEvent({event, musicians, bandUid}) {
   const submit = useSubmit()
+  const toast = useToast()
   const {isConfirmed} = useConfirm()
   const checkboxes = Object.keys(musicians).map(key => {
     let musician = {...musicians[key], key: key}
@@ -70,13 +72,32 @@ export default function FormEvent({event, musicians, bandUid}) {
   })
   const handleDelete = async (e) => {
     if (await isConfirmed('Удалить статистику репетиции?')) {
+      if (bandUid == 'temniyel') {
+        return toast({
+          status: 'error',
+          title: 'Ошибка при удалении',
+          description: 'Темный Эль - демонстрационный проект, в нем нельзя ничего удалять.'
+        })
+      }
       let formData = new FormData(e.target.form)
       formData.set('action', 'deleteEvent')
       submit(formData, {method: 'post'})
     }
   }
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    let formData = new FormData(e.target)
+    if (!formData.get('musician')) {
+      return toast({
+        status: 'error',
+        title: 'Ошибка при сохранении',
+        description: 'Укажите хотя бы одного участника'
+      })
+    }
+    submit(formData, {method: 'post'})
+  }
   return (
-    <Form key={event.date} method='post'>
+    <Form key={event.date} method='post' onSubmit={handleSubmit}>
       <VisuallyHiddenInput name='action' defaultValue='updateEvent' />
       <VisuallyHiddenInput name='bandUid' defaultValue={bandUid} />
       <VisuallyHiddenInput name='date' defaultValue={event.date} />
