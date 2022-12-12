@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { getAuth, onAuthStateChanged } from "firebase/auth"
 import { getDatabase, ref, get, update, onValue, off } from "firebase/database";
 import { LockIcon, UnlockIcon } from '@chakra-ui/icons'
+import { useConfirm } from '../components/useConfirm'
 import {
   useLoaderData,
   Link as RouterLink,
@@ -86,6 +87,7 @@ const Access = ({user, toast}) => {
 const AccessBand = ({accessBand, user, toast}) => {
   const navigate = useNavigate()
   const submit = useSubmit()
+  const {isConfirmed} = useConfirm()
   const right = (
     user && accessBand.access[user.uid] ||
     accessBand.access['all']
@@ -95,11 +97,13 @@ const AccessBand = ({accessBand, user, toast}) => {
     edit: right === 'admin',
     request: right === 'request'
   }
-  const handleClick = () => {
+  const handleClick = async () => {
     if (access.view) return navigate(`/${accessBand.uid}`)
     if (access.request) return toast(toastAccessRequest(accessBand.name))
     if (!user) return toast(toastAuthError(accessBand.name))
-    if (confirm('У Вас нет доступа к данному проекту. Запросить доступ?')) {
+    if (await isConfirmed(
+      `У Вас нет доступа к данному проекту. Запросить доступ?`
+    )) {
       let formData = new FormData()
       formData.append('bandUid', accessBand.uid)
       formData.append('bandName', accessBand.name)

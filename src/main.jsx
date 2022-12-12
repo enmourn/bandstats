@@ -1,8 +1,9 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom"
 import { initializeApp } from "firebase/app"
 import { ChakraProvider, extendTheme } from '@chakra-ui/react'
+import { ConfirmContextProvider } from './components/ConfirmContextProvider'
 
 import Root from './routes/root'
 import { Index, indexLoader, indexAction } from './routes/index'
@@ -100,7 +101,9 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ChakraProvider theme={theme}>
-      <RouterProvider router={router} />
+      <ConfirmContextProvider>
+        <RouterProvider router={router} />
+      </ConfirmContextProvider>
     </ChakraProvider>
   </React.StrictMode>
 )

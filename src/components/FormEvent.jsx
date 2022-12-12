@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Form, useSubmit } from "react-router-dom";
-import TextareaAutosize from 'react-textarea-autosize';
+import { useSubmit, Form } from "react-router-dom"
+import { useConfirm } from '../components/useConfirm'
+import TextareaAutosize from 'react-textarea-autosize'
 import {
   FormControl,
   FormLabel,
@@ -55,6 +56,7 @@ const Musician = ({musician}) => {
 
 export default function FormEvent({event, musicians, bandUid}) {
   const submit = useSubmit()
+  const {isConfirmed} = useConfirm()
   const checkboxes = Object.keys(musicians).map(key => {
     let musician = {...musicians[key], key: key}
     event?.musicians?.[key] && (musician = {...event.musicians[key], ...musician})
@@ -66,8 +68,8 @@ export default function FormEvent({event, musicians, bandUid}) {
     day: 'numeric',
     weekday: 'long',
   })
-  const handleDelete = (e) => {
-    if (confirm('Удалить статистику репетиции?')) {
+  const handleDelete = async (e) => {
+    if (await isConfirmed('Удалить статистику репетиции?')) {
       let formData = new FormData(e.target.form)
       formData.set('action', 'deleteEvent')
       submit(formData, {method: 'post'})
