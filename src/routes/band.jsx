@@ -43,6 +43,14 @@ const getMusicianEvents = (musician, events) => {
   return musicianEvents
 }
 const getExtendBand = (dbBand) => {
+  const sortMusicians = () => {
+    const musicians = Object.entries(band.musicians).sort((a, b) => {
+      if (a[1].joined > b[1].joined) return 1
+      if (a[1].joined < b[1].joined) return -1
+      return 0
+    })
+    band.musicians = Object.fromEntries(musicians)
+  }
   const extendEvents = () => {
     if (!band.events) return
     for (let date in band.events) {
@@ -128,6 +136,7 @@ const getExtendBand = (dbBand) => {
   }
   let band = { ...dbBand }
   band.eventCount = band.events ? Object.keys(band.events).length : 0
+  sortMusicians()
   extendEvents()
   extendMusicians()
   extendMonths()
